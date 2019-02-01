@@ -2,6 +2,9 @@
 {
     public class Command
     {
-        
+        internal Command()
+        {
+            
+        }
     }
 }

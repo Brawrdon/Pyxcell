@@ -8,8 +8,8 @@ namespace PyxcellTests
         [Fact]
         public void PaddIntArray()
         {
-            var pyxcell = new Pyxcell.Pyxcell();
-            pyxcell.GenerateViaCommands("hello");
+           // var pyxcell = new Pyxcell.Pyxcell();
+           // pyxcell.GenerateViaCommands("hello");
         }
     }
 }
