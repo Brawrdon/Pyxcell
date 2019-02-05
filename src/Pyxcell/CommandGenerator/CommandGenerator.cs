@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace Pyxcell
@@ -34,6 +35,8 @@ namespace Pyxcell
         private static int[] PaddArray(int[] characters)
         {
 
+            
+            // Double check this, modulus of 9 is 1, thanks Akerri
             var mod = characters.Length % 4;
             if (mod == 0)
                 return characters;
@@ -47,9 +50,18 @@ namespace Pyxcell
             return paddedCharacters;
         }
 
-        private static void GenerateCommands(int[] characters)
+        private void GenerateCommands(int[] characters)
         {
             // Take 4 characters
+            for (var i = 0; i < characters.Length; i += 4)
+            {
+                var coordinates = characters[i];
+                var direction = characters[i + 1];
+                var distance = characters[i + 2];
+                var colour = characters[i + 3];
+                _commands.Add(new Command(coordinates, direction, distance, colour));
+
+            }
             
         }
     }

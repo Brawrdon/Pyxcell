@@ -1,4 +1,5 @@
 using System;
+using Pyxcell;
 using Xunit;
 
 namespace PyxcellTests
@@ -6,10 +7,10 @@ namespace PyxcellTests
     public class PyxcellTest
     {
         [Fact]
-        public void PaddIntArray()
+        public void TestDrawing()
         {
-           // var pyxcell = new Pyxcell.Pyxcell();
-           // pyxcell.GenerateViaCommands("hello");
+            var pyxcell = new CommandGenerator();
+            pyxcell.Generate("hello");
         }
     }
 }
