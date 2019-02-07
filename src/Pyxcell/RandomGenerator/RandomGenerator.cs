@@ -6,5 +6,10 @@
         {
             throw new System.NotImplementedException();
         }
+
+        public override void Draw(string fileName)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

@@ -10,7 +10,11 @@ namespace PyxcellTests
         public void TestDrawing()
         {
             var pyxcell = new CommandGenerator();
-            pyxcell.Generate("hello");
+            pyxcell.Generate("œ ¡š i am s{}o cool ///'''±ASCII { ARE PROGRAM with twitch chat");
+            pyxcell.Draw("image.png");
+            
+            pyxcell.Generate("Hello");
+            pyxcell.Draw("image2.png");
         }
     }
 }
