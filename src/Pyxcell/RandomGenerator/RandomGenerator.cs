@@ -2,7 +2,7 @@
 {
     public class RandomGenerator : PyxcellGenerator
     {
-        public override void Generate(string text)
+        public override void Generate(string message)
         {
             throw new System.NotImplementedException();
         }

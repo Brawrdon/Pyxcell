@@ -14,25 +14,101 @@ namespace Pyxcell
         private readonly Rgb _colour;
         private Rectangle _rectangle;
         
-        internal Command(int coordinates, int direction, int distance)
+        internal Command(char character, int characterIndex)
         {
-            var x = GetX(coordinates);
-            var y = GetY(coordinates);
-            _direction = GetDirection(direction);
-            _distance = GetDistance(distance);
-            _colour = new Rgba32(Convert.ToByte(coordinates), Convert.ToByte(direction), Convert.ToByte(distance));
+            var characterUnicodeInt = Convert.ToInt32(character);
+
+            var x = FindOffset(characterIndex, characterUnicodeInt, 500);
+            var y = FindOffset(characterIndex, characterUnicodeInt, 250);
+            _direction = GetDirection(characterUnicodeInt);
+            _distance = GetDistance(characterIndex, characterUnicodeInt);
+            _colour = new Rgba32(Convert.ToByte(FindOffset(characterIndex, 1, 256)), Convert.ToByte(FindOffset(characterUnicodeInt + 500, 1, 256)), Convert.ToByte(FindOffset(characterUnicodeInt + 500, 1, 256)));
             _rectangle = new Rectangle(x, y, 10, 10);        
 
         }
-
-        private static int GetDistance(int distance)
+        
+        public void Execute(Image<Rgba32> image)
         {
-            return (500 - distance) * 3 / 4 ;
+            if (_distance == 0)
+                return;
+            
+            image.Mutate(x => x.Fill(_colour, _rectangle));
+            
+            UpdateCoordinate(image);
+            
         }
 
-        private static Direction GetDirection(int direction)
+        
+
+        /// <summary>
+        /// Applies an offset to the original index, wrapping around the specified limit.
+        /// The offset is wrapped back to 0 when the value reaches the limit.
+        /// The value must be within 0 to (limit - 1).
+        /// </summary>
+        /// <param name="original"></param>
+        /// <param name="offset"></param>
+        /// <param name="limit"></param>
+        /// <returns></returns>
+        private static int FindOffset(int original, int offset, int limit)
         {
-            var mod = direction % 4;
+            if (original < 0)
+                throw new ArgumentException();
+
+            while (original >= limit)
+                original -= limit;
+            
+            var offsettedValue = original + offset;
+
+            if (offsettedValue < limit)
+                return offsettedValue;
+           
+            do
+            {
+                var wrapDifference = offsettedValue - limit;
+                offsettedValue = 0 + wrapDifference;
+
+            } while (offsettedValue >= limit);
+
+            return offsettedValue;
+        }
+        
+        /// <summary>
+        /// Applies a negative offset to the original value, wrapping around the specified limit.
+        /// The offset is wrapped back to (limit - 1) when the value reaches the limit.
+        /// The value is mapped to its opposite.
+        /// The value must be within 0 to (limit - 1).
+        /// </summary>
+        /// <param name="original"></param>
+        /// <param name="offset"></param>
+        /// <param name="limit"></param>
+        /// <returns></returns>
+        private static int FindOffsetReverse(int original, int offset, int limit)
+        {
+            if (original < 0)
+                throw new ArgumentException();
+
+            while (original >= limit)
+                original -= limit;
+            
+            original = limit - 1 - original;
+            var offsettedValue = original + offset;
+
+            if (offsettedValue < limit)
+                return offsettedValue;
+           
+            do
+            {
+                var wrapDifference = offsettedValue - limit;
+                offsettedValue = limit - 1 - wrapDifference;
+
+            } while (offsettedValue >= limit);
+
+            return offsettedValue;
+        }
+
+        private static Direction GetDirection(int value)
+        {
+            var mod = value % 4;
 
             switch (mod)
             {
@@ -48,44 +124,22 @@ namespace Pyxcell
                     return Direction.Up;
             }
         }
-
-        private static int GetX(int coordinates)
-        {
-                
-            var x = coordinates * coordinates;
-
-            if (x <= 500) 
-                return x;
-            
-            while (x > 500)
-                x -= 500;
-
-            return x;
-        }
         
-        private static int GetY(int coordinates)
+        private int GetDistance(int index, int offset)
         {
-                
-            var y = coordinates;
-
-
-            if (coordinates > 255)
-                y -= 5;
+            var limit = 500;
+            if (_direction == Direction.Down || _direction == Direction.Up)
+                limit = 250;
             
-            return y;
+            var distance = FindOffsetReverse(index, offset, limit);
+
+            if (distance < limit / 2)
+                distance = 0;
+
+            return distance;
         }
 
-        public void Execute(Image<Rgba32> image)
-        {
-            if (_distance == 0)
-                return;
-            
-            image.Mutate(x => x.Fill(_colour, _rectangle));
-            
-            UpdateCoordinate(image);
-            
-        }
-
+      
         private void UpdateCoordinate(Image<Rgba32> image)
         {
             var moveDistance = 10;
@@ -129,7 +183,7 @@ namespace Pyxcell
         }
     }
 
-    enum Direction
+    internal enum Direction
     {
         Up,
         Down,

@@ -15,47 +15,33 @@ namespace Pyxcell
             _commands = new List<Command>();
         }
 
-        public override void Generate(string text)
+        public override void Generate(string message)
         {
-            var textToEncode = text + Convert.ToBase64String(Encoding.ASCII.GetBytes(DateTime.Now.ToFileTimeUtc().ToString()));
-            textToEncode = textToEncode.Insert(textToEncode.Length / 2, "I AM @BRAWRDONBOT©! Take MY ASCII!ƒ&#1¾	25;‰Ž");
-            var encoded = Encoding.ASCII.GetBytes(textToEncode);
-
-            // ToDo: Learn about method groups
-            var encodedIntegers = Array.ConvertAll(encoded, Convert.ToInt32);
-
-            var paddedIntegers = PaddArray(encodedIntegers);
-
-            GenerateCommands(paddedIntegers);
-        }
-
-        private static int[] PaddArray(int[] characters)
-        {
-            // Double check this, modulus of 9 is 1, thanks Akerri
-            var mod = characters.Length % 3;
-            if (mod == 0)
-                return characters;
-
-            var padAmount = 3 - mod;
-
-            var paddedCharacters = new int[characters.Length + padAmount];
-            Array.Copy(characters, paddedCharacters, characters.Length);
-
-            for (var i = 0; i < padAmount; i++)
-                paddedCharacters[characters.Length + i] = characters[i];
-
-            return paddedCharacters;
-        }
-
-        private void GenerateCommands(int[] characters)
-        {
-            for (var i = 0; i < characters.Length; i += 3)
+            var paddedMessage = CreateMessageToEncode(message);
+            
+            for (var i = 0; i < paddedMessage.Length; i++)
             {
-                var coordinates = characters[i];
-                var direction = characters[i + 1];
-                var distance = characters[i + 2];
-                _commands.Add(new Command(coordinates, direction, distance));
+                _commands.Add(new Command(paddedMessage[i], i));
+
             }
+        }
+
+        private static string CreateMessageToEncode(string originalMessage)
+        {
+            if (originalMessage.Length > 500)
+                return originalMessage.Substring(0, 500);
+
+            var paddedMessage = originalMessage;
+            while (paddedMessage.Length < 500)
+            {
+                paddedMessage += DateTime.Now.ToString();
+                paddedMessage += originalMessage;
+            }
+            
+            if (paddedMessage.Length > 500)
+                paddedMessage = paddedMessage.Substring(0, 500);
+
+            return paddedMessage;
         }
 
         public override void Draw(string fileName)
