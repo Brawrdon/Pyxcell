@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -22,7 +21,6 @@ namespace Pyxcell
             for (var i = 0; i < paddedMessage.Length; i++)
             {
                 _commands.Add(new Command(paddedMessage[i], i));
-
             }
         }
 

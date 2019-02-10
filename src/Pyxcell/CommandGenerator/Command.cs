@@ -18,12 +18,12 @@ namespace Pyxcell
         {
             var characterUnicodeInt = Convert.ToInt32(character);
 
-            var x = FindOffset(characterIndex, characterUnicodeInt, 500);
+            var x = FindOffsetReverse(characterIndex, characterUnicodeInt, 500);
             var y = FindOffset(characterIndex, characterUnicodeInt, 250);
             _direction = GetDirection(characterUnicodeInt);
             _distance = GetDistance(characterIndex, characterUnicodeInt);
-            _colour = new Rgba32(Convert.ToByte(FindOffset(characterIndex, 1, 256)), Convert.ToByte(FindOffset(characterUnicodeInt + 500, 1, 256)), Convert.ToByte(FindOffset(characterUnicodeInt + 500, 1, 256)));
-            _rectangle = new Rectangle(x, y, 10, 10);        
+            _colour = GetColour(characterIndex, characterUnicodeInt);
+            _rectangle = new Rectangle(x, y, 5, 5);        
 
         }
         
@@ -84,6 +84,7 @@ namespace Pyxcell
         /// <returns></returns>
         private static int FindOffsetReverse(int original, int offset, int limit)
         {
+            // ToDo: Fix bug with wrapping around minus values
             if (original < 0)
                 throw new ArgumentException();
 
@@ -131,18 +132,24 @@ namespace Pyxcell
             if (_direction == Direction.Down || _direction == Direction.Up)
                 limit = 250;
             
-            var distance = FindOffsetReverse(index, offset, limit);
+            var distance = FindOffset(index, offset, limit);
 
-            if (distance < limit / 2)
+            if (distance > limit / 2)
                 distance = 0;
 
             return distance;
         }
 
+        private Rgba32 GetColour(int index, int offset)
+        {
+            var colourIndex = FindOffset(index, offset, ColorConstants.WebSafeColors.Length);
+
+            return ColorConstants.WebSafeColors[colourIndex];
+        }
       
         private void UpdateCoordinate(Image<Rgba32> image)
         {
-            var moveDistance = 10;
+            var moveDistance = 5;
 
             if (_direction == Direction.Up || _direction == Direction.Left)
                 moveDistance *= -1;
