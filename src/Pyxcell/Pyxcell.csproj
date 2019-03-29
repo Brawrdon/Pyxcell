@@ -5,6 +5,7 @@
     <Version>0.2.0-alpha</Version>
     <Authors>Brawrdon</Authors>
     <Company>Brawrdon</Company>
+    <PackageVersion>0.3.0-alpha</PackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />

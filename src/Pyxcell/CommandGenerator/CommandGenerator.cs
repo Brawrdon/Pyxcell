@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Pyxcell
@@ -42,14 +44,19 @@ namespace Pyxcell
             return paddedMessage;
         }
 
-        public override void Draw(string fileName)
+        public override string DrawToBase64()
         {
             using (var image = new Image<Rgba32>(500, 250))
             {
                 foreach (var command in _commands)
                     command.Execute(image);
-                
-                image.Save(fileName);
+
+                using (var outputStream = new MemoryStream())
+                {
+                    image.SaveAsPng(outputStream);
+                    var bytes = outputStream.ToArray();
+                    return Convert.ToBase64String(bytes);
+                }            
             }
         }
     }

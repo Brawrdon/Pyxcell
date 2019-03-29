@@ -11,10 +11,10 @@ namespace PyxcellTests
         {
             var pyxcell = new CommandGenerator();
             pyxcell.Generate("œ ¡š i am s{}o cool ///'''±ASCII { ARE PROGRAM with twitch chat");
-            pyxcell.Draw("image.png");
+            Console.WriteLine(pyxcell.DrawToBase64());
             
-            pyxcell.Generate("Hello");
-            pyxcell.Draw("image2.png");
+            pyxcell.Generate("I am brandon");
+            Console.WriteLine(pyxcell.DrawToBase64());
         }
     }
 }

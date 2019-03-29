@@ -7,7 +7,7 @@
             throw new System.NotImplementedException();
         }
 
-        public override void Draw(string fileName)
+        public override string DrawToBase64()
         {
             throw new System.NotImplementedException();
         }

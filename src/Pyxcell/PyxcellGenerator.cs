@@ -4,6 +4,6 @@
     {
         public abstract void Generate(string message);
 
-        public abstract void Draw(string fileName);
+        public abstract string DrawToBase64();
     }
 }
