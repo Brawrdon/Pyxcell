@@ -1,13 +1,13 @@
 ﻿namespace Pyxcell
 {
-    public class RandomGenerator : PyxcellGenerator
+    public class RandomGenerator : IPyxcellGenerator
     {
-        public override void Generate(string message)
+        public void Generate(string message)
         {
             throw new System.NotImplementedException();
         }
 
-        public override string DrawToBase64()
+        public string DrawToBase64()
         {
             throw new System.NotImplementedException();
         }

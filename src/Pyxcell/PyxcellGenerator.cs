@@ -1,9 +1,9 @@
 ﻿namespace Pyxcell
 {
-    public abstract class PyxcellGenerator
+    public interface IPyxcellGenerator
     {
-        public abstract void Generate(string message);
+        void Generate(string message);
 
-        public abstract string DrawToBase64();
+        string DrawToBase64();
     }
 }

@@ -7,7 +7,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Pyxcell
 {
-    public class CommandGenerator : PyxcellGenerator
+    public class CommandGenerator : IPyxcellGenerator
     {
         private readonly List<Command> _commands;
 
@@ -16,7 +16,7 @@ namespace Pyxcell
             _commands = new List<Command>();
         }
 
-        public override void Generate(string message)
+        public void Generate(string message)
         {
             var paddedMessage = CreateMessageToEncode(message);
             
@@ -44,7 +44,7 @@ namespace Pyxcell
             return paddedMessage;
         }
 
-        public override string DrawToBase64()
+        public string DrawToBase64()
         {
             using (var image = new Image<Rgba32>(500, 250))
             {
