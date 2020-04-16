@@ -31,6 +31,7 @@ namespace PyxcellTests
         public void GetSentiment()
         {
             var sentimentGenerator = new SentimentGenerator(); 
+            output.WriteLine(sentimentGenerator.Draw());
         }
     }
 }
