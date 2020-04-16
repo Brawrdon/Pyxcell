@@ -31,7 +31,10 @@ namespace PyxcellTests
         public void GetSentiment()
         {
             var sentimentGenerator = new SentimentGenerator(); 
-            output.WriteLine(sentimentGenerator.Draw());
+            output.WriteLine(sentimentGenerator.Generate("You need to install the plugin and activate it for your stream on their website." +
+                                        "Sometimes, I really like it when my friends buy me food without me asking." +
+                                        "Don't you think it's great that we can all have a blast on this tiny rock." +
+                                        "I like cheese most days. But sometimes, I don't."));
         }
     }
 }
