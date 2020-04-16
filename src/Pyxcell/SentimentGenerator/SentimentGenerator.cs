@@ -11,79 +11,86 @@ namespace Pyxcell.SentimentGenerator
 {
     public class SentimentGenerator
     {
-        private List<int[]> Variations { get; }
-        private List<Letter> Letters { get; }
+        private readonly List<int[]> _variations;
+        private readonly List<Letter> _letters;
+        private readonly ColourPalette _colourPalette;
+        private readonly Random _random = new Random();
 
         public SentimentGenerator()
         {
-            Variations = new List<int[]>();
-            Letters = new List<Letter>();
+            _variations = new List<int[]>();
+            _letters = new List<Letter>();
+
+            var paletteChoice = _random.Next(2);
+
+            _colourPalette = paletteChoice switch
+            {
+                0 => ColourPalette.PaletteOne(),
+                _ => ColourPalette.PaletteTwo()
+            };
 
             GenerateVariations();
             MapLetters();
         }
+        
+        
 
         public string Draw()
         {
-            var width = 700;
-            var height = 700;
+            const int width = 700;
+            const int height = 700;
 
-            using (var image = new Image<Rgba32>(width, height))
+            using var image = new Image<Rgba32>(width, height);
+            
+            var yOffset = 0;
+            for (var i = 0; i < _letters.Count; i++)
             {
-                // Set Background to black
-                for (int y = 0; y < 100; y++)
+                var xOffset = i % 50;
+                if (i != 0 && i % 50 == 0)
+                    yOffset++;
+
+                var colour = SelectColour();
+                for (var y = 0 + (yOffset * 14); y < 14 + (yOffset * 14); y++)
                 {
-                    Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
-                    for (int x = 0; x < image.Width; x++)
+                    var pixelRowSpan = image.GetPixelRowSpan(y);
+
+                    for (var x = 0 + (xOffset * 14); x < 14 + (xOffset * 14); x++)
                     {
-                        pixelRowSpan[x] = Rgba32.Black;
+                        // Reset x to be between 0 and 14 so we can use it as the index when accessing
+                        // the current letter's Fill array. We divide by 2 as it'll produce a whole number
+                        // within the bounds of the fill array which has a length of 7.
+                        var xWithoutOffset = x - (xOffset * 14);
+                        var indexForFill = xWithoutOffset / 2;
+
+                        if (_letters[i].Fill[indexForFill] == 1)
+                            pixelRowSpan[x] = colour;
                     }
                 }
-                
-                var yOffset = 0;
-                for (var i = 0; i < Letters.Count; i++)
-                {
-                    var xOffset = i % 50;
-                    if (i != 0 && i % 50 == 0)
-                        yOffset++;
-
-                    for (var y = 0 + (yOffset * 14); y < 14 + (yOffset * 14); y++)
-                    {
-                        Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
-                        
-                        for (var x = 0 + (xOffset * 14); x < 14 + (xOffset * 14); x++)
-                        {
-                            // Reset x to be between 0 and 14 so we can use it as the index when accessing
-                            // the current letter's Fill array. We divide by 2 as it'll produce a whole number
-                            // within the bounds of the fill array which has a length of 7.
-                            var xWithoutOffset = x - (xOffset * 14);
-                            var indexForFill = xWithoutOffset / 2;
-
-                            if (Letters[i].Fill[indexForFill] == 1)
-                                pixelRowSpan[x] = Rgba32.Aqua;
-                        }
-                    }
-                }
+            }
 
 
 
-                using (var outputStream = new MemoryStream())
-                {
-                    image.SaveAsPng(outputStream);
-                    var bytes = outputStream.ToArray();
-                    return Convert.ToBase64String(bytes);
-                }
+            using (var outputStream = new MemoryStream())
+            {
+                image.SaveAsPng(outputStream);
+                var bytes = outputStream.ToArray();
+                return Convert.ToBase64String(bytes);
             }
         }
 
-        public void Generate(string message, Rgba32 positiveColour, Rgba32 negativeColour)
+        private Rgba32 SelectColour()
         {
-            // ToDo: Randomly assign four colours
-            var colourOne = Rgba32.Aqua;
-            var colourTwo = Rgba32.Black;
-            var colourThree = Rgba32.White;
-            var colourFour = Rgba32.Olive;
+            var colourChoice = _random.Next(0, 3);
 
+            return colourChoice switch
+            {
+                0 => _colourPalette.ColourOne,
+                1 => _colourPalette.ColourTwo,
+                _ => _colourPalette.ColourThree
+            };
+        }
+        public void Generate(string message)
+        {
             // Run sentiment analysis
             //var client = LanguageServiceClient.Create();
 //            var response = client.AnnotateText(document, new AnnotateTextRequest.Types.Features 
@@ -104,26 +111,24 @@ namespace Pyxcell.SentimentGenerator
             {
                 var binary = Convert.ToString(i, 2).PadLeft(7, '0');
                 var binaryAsCharArray = binary.ToCharArray();
-                Variations.Add(binaryAsCharArray.Select(x => int.Parse(x.ToString())).ToArray());
+                _variations.Add(binaryAsCharArray.Select(x => int.Parse(x.ToString())).ToArray());
             }
         }
 
         private void MapLetters()
         {
             // Temporary variable just to keep things tidy.
-            var tmpVariations = new List<int[]>(Variations);
-
-            var rnd = new Random();
+            var tmpVariations = new List<int[]>(_variations);
 
             for (int i = 32; i <= 126; i++)
             {
-                var index = rnd.Next(tmpVariations.Count - 1);
+                var index = _random.Next(tmpVariations.Count - 1);
                 var letter = new Letter {Char = (char) i, Fill = tmpVariations[index]};
 
                 // Removing the variation prevents us from accidently picking the same fill more than once.
                 tmpVariations.RemoveAt(index);
 
-                Letters.Add(letter);
+                _letters.Add(letter);
             }
         }
     }
