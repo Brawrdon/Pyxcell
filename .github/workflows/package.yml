@@ -26,6 +26,8 @@ jobs:
       with:
         dotnet-version: '3.1.100' # SDK Version to use.
         source-url: https://api.nuget.org/v3/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{secrets.NUGET_DEPLOY_KEY}}
     - name: Create the package
       run: dotnet pack --configuration Release src/Pyxcell.csproj
     - name: Publish to NuGet Gallery
