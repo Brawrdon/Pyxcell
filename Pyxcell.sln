@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pyxcell", "src\Pyxcell\Pyxcell.csproj", "{B9BE8DDA-3612-441F-8495-5F5FDCB1CFC5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pyxcell", "src\Pyxcell.csproj", "{B9BE8DDA-3612-441F-8495-5F5FDCB1CFC5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PyxcellTests", "tests\PyxcellTests.csproj", "{8D0498F1-B20E-4B07-8507-9D8EAD8FDCF3}"
 EndProject

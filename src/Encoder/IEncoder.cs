@@ -1,6 +1,6 @@
 ﻿namespace Pyxcell.Encoder
 {
-    public interface IPyxcellGenerator
+    public interface IEncoder
     {
         string Generate(string message);
     }

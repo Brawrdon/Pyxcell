@@ -9,7 +9,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Pyxcell.Encoder
 {
-    public class Encoder : IPyxcellGenerator
+    public class Encoder : IEncoder
     {
         private const int MaxCharacters = 2400;
         private readonly IColourPalette _colourPalette;
