@@ -1,7 +1,7 @@
 on: [push, pull_request]
 
 jobs:
-  build:
+  push_gpr:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -9,13 +9,26 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.100' # SDK Version to use.
+        source-url: https://nuget.pkg.github.com/brawrdon/index.json  
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        NUGET_ORG_AUTH_TOKEN:  ${{secrets.NUGET_TOKEN}}
+    - name: Create the package
+      run: dotnet pack --configuration Release src/Pyxcell.csproj
+    - name: Publish to Github Package Repository
+      run: dotnet nuget push src/bin/Release/*.nupkg --skip-duplicate
+  
+  push_nuget_org:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    # Authenticates packages to push to GPR
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.100' # SDK Version to use.
+        source-url: https://api.nuget.org/v3/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{secrets.NUGET_TOKEN}}
     - name: Create the package
       run: dotnet pack --configuration Release src/Pyxcell.csproj
     - name: Publish to NuGet Gallery
-      run: dotnet nuget push src/bin/Release/*.nupkg -k $NUGET_ORG_AUTH_TOKEN -Source "https://api.nuget.org/v3/index.json" --skip-duplicate
-    - name: Publish to Github Package Repository
-      run: dotnet nuget push src/bin/Release/*.nupkg -Source "https://nuget.pkg.github.com/brawrdon/index.json" --skip-duplicate
-    
+      run: dotnet nuget push src/bin/Release/*.nupkg --skip-duplicate
