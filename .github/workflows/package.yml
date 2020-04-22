@@ -12,7 +12,10 @@ jobs:
         source-url: https://nuget.pkg.github.com/brawrdon/index.json
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        NUGET_ORG_AUTH_TOKEN:  ${{secrets.NUGET_TOKEN}}
     - name: Create the package
       run: dotnet pack --configuration Release src/Pyxcell.csproj
-    - name: Publish the package to GPR
+    - name: Publish to Github Package Repository
       run: dotnet nuget push src/bin/Release/*.nupkg
+    - name: Publish to NuGet Gallery
+      run: dotnet nuget push src/bin/Release/*.nupkg -k $NUGET_ORG_AUTH_TOKEN -s https://api.nuget.org/v3/index.json
