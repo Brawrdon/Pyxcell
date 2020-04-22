@@ -13,6 +13,6 @@ jobs:
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
     - name: Create the package
-      run: dotnet pack --configuration Release src/Pxycell.csproj
+      run: dotnet pack --configuration Release src/Pyxcell.csproj
     - name: Publish the package to GPR
       run: dotnet nuget push src/bin/Release/*.nupkg
