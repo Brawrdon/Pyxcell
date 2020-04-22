@@ -1,6 +1,6 @@
-namespace Pyxcell.SentimentGenerator
+namespace Pyxcell.Common
 {
-    class Letter
+    internal class Letter
     {
         public char Char { get; set; }
         public int[] Fill { get; set; }

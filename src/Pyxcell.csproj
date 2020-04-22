@@ -5,10 +5,14 @@
     <Version>0.4.0-alpha</Version>
     <Authors>Brawrdon</Authors>
     <Company>Brawrdon</Company>
-    <PackageVersion>0.4.0-alpha</PackageVersion>
+    <PackageVersion>0.5.0-alpha</PackageVersion>
+    <Title>Pyxcell</Title>
+    <Copyright>Brawrdon 2020</Copyright>
+    <PackageProjectUrl>https://github.com/Brawrdon/Pyxcell</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Brawrdon/Pyxcell/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/Brawrdon/Pyxcell</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Google.Cloud.Language.V1" Version="2.0.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
   </ItemGroup>
