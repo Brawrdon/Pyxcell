@@ -15,7 +15,7 @@ jobs:
     - name: Create the package
       run: dotnet pack --configuration Release src/Pyxcell.csproj
     - name: Publish to NuGet Gallery
-      run: dotnet nuget push src/bin/Release/*.nupkg -k $NUGET_ORG_AUTH_TOKEN "https://api.nuget.org/v3/index.json" --skip-duplicate
+      run: dotnet nuget push src/bin/Release/*.nupkg -k $NUGET_ORG_AUTH_TOKEN -s "https://api.nuget.org/v3/index.json" --skip-duplicate
     - name: Publish to Github Package Repository
       run: dotnet nuget push src/bin/Release/*.nupkg -s https://nuget.pkg.github.com/brawrdon/index.json --skip-duplicate
     
