@@ -12,7 +12,10 @@ jobs:
         dotnet-version: 3.1.101
     - name: Install dependencies
       run: dotnet restore
-    - name: Test
+    - name: Copy Resources
+      run: cp ./tests/Resources/* ./tests/bin/netcoreapp3.1/
+    - name: Run Tests
+      working-directory: ./tests/
       run: dotnet test --no-restore --verbosity normal
 
 
