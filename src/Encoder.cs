@@ -82,7 +82,6 @@ namespace Pyxcell
                         var xWithoutOffset = x - xOffset * 14;
                         var indexForFill = xWithoutOffset / 2;
 
-                        // Find the mapping for the character
                         var indexQuery = i;
                         var letter = _letters.First(c => c.Char == _message[indexQuery]);
                         if (letter.Fill[indexForFill] == 1)

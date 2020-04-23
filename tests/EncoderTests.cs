@@ -7,18 +7,18 @@ using Xunit.Abstractions;
 
 namespace PyxcellTests
 {
-    public class PyxcellTest
+    public class EncoderTests
     {
     
         private readonly ITestOutputHelper output;
 
-        public PyxcellTest(ITestOutputHelper output)
+        public EncoderTests(ITestOutputHelper output)
         {
             this.output = output;
         }
 
         [Fact]
-        public void GetSentiment()
+        public void GenerateEncodedExample()
         {
             var colours = new List<Rgba32>
             {
