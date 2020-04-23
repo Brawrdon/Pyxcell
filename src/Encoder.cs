@@ -73,7 +73,7 @@ namespace Pyxcell
             }
         }
 
-    
+
 
         private void EncodeColourPalette(Image<Rgba32> image)
         {
@@ -82,26 +82,10 @@ namespace Pyxcell
                 var choice = _random.Next(0, 128);
                 var column = GetColumn();
                 SetRowAndColumn();
-
-                for (var y = 0 + _row * 14; y < 14 + _row * 14; y++)
-                {
-                    var pixelRowSpan = image.GetPixelRowSpan(y);
-                    
-                    // The column variable defines the column number. Multiplying it by 14 will give us
-                    // the 14 x 14 grid we need.
-                    for (var x = column * 14; x < 14 + column * 14; x++)
-                    {
-                        // Reset x to be between 0 and 14 so we can use it as the index when accessing
-                        // the current letter's Fill array. We divide by 2 as it'll produce a whole number
-                        // within the bounds of the fill array which has a length of 7.
-                        var indexForFill =  (x - column * 14) / 2;
-                        if (_variations[choice][indexForFill] == 1)
-                            pixelRowSpan[x] = colour;
-                    }
-                }
-
-                _column++;
+                PaintSquare(image, column, _variations[choice], colour);
             }
+            
+            EncodeDelCharacter(image);
         }
 
         private void SetRowAndColumn()
@@ -121,8 +105,16 @@ namespace Pyxcell
                 SetRowAndColumn();
                 PaintSquare(image, column, letter.Fill);
             }
+
+            EncodeDelCharacter(image);
+        }
+
+        private void EncodeDelCharacter(Image<Rgba32> image)
+        {
+            var column = GetColumn();
+            SetRowAndColumn();
             var delCharacter = _letters.First(x => x.Char == (char) 127);
-            PaintSquare(image, _column, delCharacter.Fill);
+            PaintSquare(image, column, delCharacter.Fill);
         }
 
         private int GetColumn()
@@ -131,20 +123,22 @@ namespace Pyxcell
         }
 
 
-        private void PaintSquare(Image<Rgba32> image, int columnToPaint, int[] fill)
+        private void PaintSquare(Image<Rgba32> image, int column, int[] fill, Rgba32 colour = default)
         {
-            var colour = _colourPalette.SelectRandomColour();
+            if (colour == default)
+                colour  = _colourPalette.SelectRandomColour();
+            
             for (var y = 0 + _row * 14; y < 14 + _row * 14; y++)
             {
                 var pixelRowSpan = image.GetPixelRowSpan(y);
 
-                for (var x = 0 + columnToPaint * 14; x < 14 + columnToPaint * 14; x++)
+                // Columns take a 14 x 14 grid.
+                for (var x = column * 14; x < 14 + column * 14; x++)
                 {
                     // Reset x to be between 0 and 14 so we can use it as the index when accessing
                     // the current letter's Fill array. We divide by 2 as it'll produce a whole number
                     // within the bounds of the fill array which has a length of 7.
-                    var xWithoutOffset = x - columnToPaint * 14;
-                    var indexForFill = xWithoutOffset / 2;
+                    var indexForFill = (x - column * 14) / 2;
 
                     if (fill[indexForFill] == 1)
                         pixelRowSpan[x] = colour;
