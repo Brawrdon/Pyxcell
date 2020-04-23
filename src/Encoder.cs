@@ -15,9 +15,8 @@ namespace Pyxcell
         private readonly IColourPalette _colourPalette;
         private readonly List<Letter> _letters;
         private readonly Random _random;
-
         private readonly List<int[]> _variations;
-        private char[] _message;
+        private char[] _text;
         private int _row;
         private int _column;
 
@@ -41,20 +40,21 @@ namespace Pyxcell
             if (string.IsNullOrEmpty(message))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(message));
 
-            _message = message.ToCharArray();
+            _text = message.ToCharArray();
 
-            return Draw();
+            return Encode();
         }
 
-        private string Draw()
+        private string Encode()
         {
             const int width = 700;
             const int height = 700;
 
             using var image = new Image<Rgba32>(width, height);
 
-            DrawLetterMappings(image);
-            DrawLetters(image);
+            EncodeLetterMappings(image);
+            EncodeColourPalette(image);
+            EncodeText(image);
 
             using var outputStream = new MemoryStream();
             image.SaveAsPng(outputStream);
@@ -62,32 +62,40 @@ namespace Pyxcell
             return Convert.ToBase64String(bytes);
         }
 
-        private void DrawLetters(Image<Rgba32> image)
+        private void EncodeText(Image<Rgba32> image)
         {
-            foreach (var character in _message)
+            foreach (var character in _text)
             {
-                var xOffset = _column % 50;
-                if (_column != 0 && _column % 50 == 0)
-                {
-                    _row++;
-                    _column = 0;
-                }
+                var column = GetColumn();
+                SetRowAndColumn();
+                var letter = _letters.First(x => x.Char ==  character);
+                PaintSquare(image, _column, letter.Fill);
+            }
+        }
 
-                var colour = _colourPalette.SelectRandomColour();
+    
+
+        private void EncodeColourPalette(Image<Rgba32> image)
+        {
+            foreach (var colour in _colourPalette.Colours)
+            {
+                var choice = _random.Next(0, 128);
+                var column = GetColumn();
+                SetRowAndColumn();
+
                 for (var y = 0 + _row * 14; y < 14 + _row * 14; y++)
                 {
                     var pixelRowSpan = image.GetPixelRowSpan(y);
-
-                    for (var x = 0 + xOffset * 14; x < 14 + xOffset * 14; x++)
+                    
+                    // The column variable defines the column number. Multiplying it by 14 will give us
+                    // the 14 x 14 grid we need.
+                    for (var x = column * 14; x < 14 + column * 14; x++)
                     {
                         // Reset x to be between 0 and 14 so we can use it as the index when accessing
                         // the current letter's Fill array. We divide by 2 as it'll produce a whole number
                         // within the bounds of the fill array which has a length of 7.
-                        var xWithoutOffset = x - xOffset * 14;
-                        var indexForFill = xWithoutOffset / 2;
-
-                        var letter = _letters.First(c => c.Char == character);
-                        if (letter.Fill[indexForFill] == 1)
+                        var indexForFill =  (x - column * 14) / 2;
+                        if (_variations[choice][indexForFill] == 1)
                             pixelRowSpan[x] = colour;
                     }
                 }
@@ -96,40 +104,59 @@ namespace Pyxcell
             }
         }
 
-        private void DrawLetterMappings(Image<Rgba32> image)
+        private void SetRowAndColumn()
+        {
+            if (_column == 0 || _column % 50 != 0) 
+                return;
+           
+            _row++;
+            _column = 0;
+        }
+
+        private void EncodeLetterMappings(Image<Rgba32> image)
         {
             foreach (var letter in _letters)
             {
-                var xOffset = _column % 50;
-                if (_column != 0 && _column % 50 == 0)
-                    _row++;
-
-                var colour = _colourPalette.SelectRandomColour();
-                for (var y = 0 + _row * 14; y < 14 + _row * 14; y++)
-                {
-                    var pixelRowSpan = image.GetPixelRowSpan(y);
-
-                    for (var x = 0 + xOffset * 14; x < 14 + xOffset * 14; x++)
-                    {
-                        // Reset x to be between 0 and 14 so we can use it as the index when accessing
-                        // the current letter's Fill array. We divide by 2 as it'll produce a whole number
-                        // within the bounds of the fill array which has a length of 7.
-                        var xWithoutOffset = x - xOffset * 14;
-                        var indexForFill = xWithoutOffset / 2;
-
-                        if (letter.Fill[indexForFill] == 1)
-                            pixelRowSpan[x] = colour;
-                    }
-                }
-
-                _column++;
+                var column = GetColumn();
+                SetRowAndColumn();
+                PaintSquare(image, column, letter.Fill);
             }
+            var delCharacter = _letters.First(x => x.Char == (char) 127);
+            PaintSquare(image, _column, delCharacter.Fill);
+        }
+
+        private int GetColumn()
+        {
+            return _column % 50;
+        }
+
+
+        private void PaintSquare(Image<Rgba32> image, int columnToPaint, int[] fill)
+        {
+            var colour = _colourPalette.SelectRandomColour();
+            for (var y = 0 + _row * 14; y < 14 + _row * 14; y++)
+            {
+                var pixelRowSpan = image.GetPixelRowSpan(y);
+
+                for (var x = 0 + columnToPaint * 14; x < 14 + columnToPaint * 14; x++)
+                {
+                    // Reset x to be between 0 and 14 so we can use it as the index when accessing
+                    // the current letter's Fill array. We divide by 2 as it'll produce a whole number
+                    // within the bounds of the fill array which has a length of 7.
+                    var xWithoutOffset = x - columnToPaint * 14;
+                    var indexForFill = xWithoutOffset / 2;
+
+                    if (fill[indexForFill] == 1)
+                        pixelRowSpan[x] = colour;
+                }
+            }
+            _column++;
         }
 
 
         private void GenerateVariations()
         {
-            // We are supporting ASCII characters 32 - 126 giving us a total of 94 characters.
+            // We are supporting ASCII characters 32 - 127 giving us a total of 95 characters.
             // These characters are going to be randomly mapped to a shape which is defined by a 
             // 10 x 10 grid with 7 segments inside. The segments will be either on (painted) or off.
             // 127 represents the maximum value that can be represented in a 7-bit binary value;
@@ -147,7 +174,7 @@ namespace Pyxcell
             // Temporary variable just to keep things tidy.
             var tmpVariations = new List<int[]>(_variations);
 
-            for (var i = 32; i <= 126; i++)
+            for (var i = 32; i <= 127; i++)
             {
                 var index = _random.Next(tmpVariations.Count - 1);
                 var letter = new Letter {Char = (char) i, Fill = tmpVariations[index]};
