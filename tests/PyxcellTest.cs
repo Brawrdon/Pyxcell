@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using Pyxcell;
 using Pyxcell.Common;
-using Pyxcell.Encoder;
 using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 using Xunit.Abstractions;

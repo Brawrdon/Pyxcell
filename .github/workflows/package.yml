@@ -1,14 +1,36 @@
-on: [push, pull_request]
+name: .NET Core
 
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 jobs:
-  push_gpr:
+  test:
+    name: Run unit tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+
+
+  package:
+    name: Push to Github Package Repository
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - uses: actions/checkout@v2
     # Authenticates packages to push to GPR
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.100' # SDK Version to use.
+        dotnet-version: '3.1.101' # SDK Version to use.
         source-url: https://nuget.pkg.github.com/brawrdon/index.json  
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -16,19 +38,5 @@ jobs:
       run: dotnet pack --configuration Release src/Pyxcell.csproj
     - name: Publish to Github Package Repository
       run: dotnet nuget push src/bin/Release/*.nupkg --skip-duplicate
-  
-  push_nuget_org:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    # Authenticates packages to push to GPR
-    - uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '3.1.100' # SDK Version to use.
-        source-url: https://api.nuget.org/v3/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{secrets.NUGET_DEPLOY_KEY}}
-    - name: Create the package
-      run: dotnet pack --configuration Release src/Pyxcell.csproj
     - name: Publish to NuGet Gallery
       run: dotnet nuget push src/bin/Release/*.nupkg --api-key ${{secrets.NUGET_DEPLOY_KEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate

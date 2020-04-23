@@ -7,7 +7,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Pyxcell.Encoder
+namespace Pyxcell
 {
     public class Encoder : IEncoder
     {
