@@ -17,7 +17,7 @@ namespace PyxcellTests
         [Fact]
         public void GetLettersFromImage()
         {
-           var decoder = new Decoder("EncodedTestImage.png");
+           var decoder = new Decoder("EncodedTestImage2.png");
            var decodedImage = decoder.Decode();
            
            Assert.Equal((char) 32, decodedImage.Letters[0].Char);

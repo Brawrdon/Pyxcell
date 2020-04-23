@@ -18,15 +18,18 @@ namespace Pyxcell
 
         private readonly List<int[]> _variations;
         private char[] _message;
+        private int _row;
+        private int _column;
+
 
         public Encoder(IColourPalette colourPalette)
         {
             _random = new Random();
             _variations = new List<int[]>();
             _letters = new List<Letter>();
-
             _colourPalette = colourPalette ?? throw new ArgumentNullException(nameof(colourPalette));
-
+            _column = 0;
+            _row = 0;
             GenerateVariations();
             MapLetters();
         }
@@ -61,16 +64,17 @@ namespace Pyxcell
 
         private void DrawLetters(Image<Rgba32> image)
         {
-            // yOffset starts at one due to the letter mappings taking 1 and a haf lines.
-            var yOffset = 2;
-            for (var i = 0; i < _message.Length; i++)
+            foreach (var character in _message)
             {
-                var xOffset = i % 50;
-                if (i != 0 && i % 50 == 0)
-                    yOffset++;
+                var xOffset = _column % 50;
+                if (_column != 0 && _column % 50 == 0)
+                {
+                    _row++;
+                    _column = 0;
+                }
 
                 var colour = _colourPalette.SelectRandomColour();
-                for (var y = 0 + yOffset * 14; y < 14 + yOffset * 14; y++)
+                for (var y = 0 + _row * 14; y < 14 + _row * 14; y++)
                 {
                     var pixelRowSpan = image.GetPixelRowSpan(y);
 
@@ -82,26 +86,26 @@ namespace Pyxcell
                         var xWithoutOffset = x - xOffset * 14;
                         var indexForFill = xWithoutOffset / 2;
 
-                        var indexQuery = i;
-                        var letter = _letters.First(c => c.Char == _message[indexQuery]);
+                        var letter = _letters.First(c => c.Char == character);
                         if (letter.Fill[indexForFill] == 1)
                             pixelRowSpan[x] = colour;
                     }
                 }
+
+                _column++;
             }
         }
 
         private void DrawLetterMappings(Image<Rgba32> image)
         {
-            var yOffset = 0;
-            for (var i = 0; i < _letters.Count; i++)
+            foreach (var letter in _letters)
             {
-                var xOffset = i % 50;
-                if (i != 0 && i % 50 == 0)
-                    yOffset++;
+                var xOffset = _column % 50;
+                if (_column != 0 && _column % 50 == 0)
+                    _row++;
 
                 var colour = _colourPalette.SelectRandomColour();
-                for (var y = 0 + yOffset * 14; y < 14 + yOffset * 14; y++)
+                for (var y = 0 + _row * 14; y < 14 + _row * 14; y++)
                 {
                     var pixelRowSpan = image.GetPixelRowSpan(y);
 
@@ -113,10 +117,12 @@ namespace Pyxcell
                         var xWithoutOffset = x - xOffset * 14;
                         var indexForFill = xWithoutOffset / 2;
 
-                        if (_letters[i].Fill[indexForFill] == 1)
+                        if (letter.Fill[indexForFill] == 1)
                             pixelRowSpan[x] = colour;
                     }
                 }
+
+                _column++;
             }
         }
 
