@@ -17,6 +17,7 @@ namespace PyxcellTests
             this.output = output;
         }
 
+        //ToDo: Write more tests!
         [Fact]
         public void GenerateEncodedExample()
         {
@@ -34,7 +35,10 @@ namespace PyxcellTests
             
             var colourPalette = new ColourPalette(colours);
             
-            var encoder = new Encoder(colourPalette);
+            var encoder = new Encoder(colourPalette, new List<Keyword>
+            {
+                new Keyword { Word = "activate", Colour = Rgba32.Black}
+            });
             
             output.WriteLine(encoder.Generate("You need to install the plugin and activate it for your stream on their website." +
                                         "Sometimes, I really like it when my friends buy me food without me asking." +

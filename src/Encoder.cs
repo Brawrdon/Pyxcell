@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Pyxcell.Common;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
@@ -13,24 +14,43 @@ namespace Pyxcell
     {
         private const int MaxCharacters = 2400;
         private readonly IColourPalette _colourPalette;
+        private readonly IColourPalette _keywordColourPalette;
+        private readonly List<Keyword> _keywords;
         private readonly List<CharacterGrid> _characters;
         private readonly Random _random;
         private List<int[]> _variations;
-        private char[] _text;
+        private List<string> _words;
         private int _row;
         private int _column;
 
 
-        public Encoder(IColourPalette colourPalette)
+        public Encoder(IColourPalette colourPalette, List<Keyword> keywords = null)
         {
+            _colourPalette = colourPalette ?? throw new ArgumentNullException(nameof(colourPalette));
+            _keywordColourPalette = new ColourPalette();
+            _keywords = keywords ?? new List<Keyword>();
+            
+            SetPalettes();
+
             _random = new Random();
             _variations = new List<int[]>();
             _characters = new List<CharacterGrid>();
-            _colourPalette = colourPalette ?? throw new ArgumentNullException(nameof(colourPalette));
+            
             _column = 0;
             _row = 0;
             GenerateVariations();
             MapCharacters();
+        }
+
+        private void SetPalettes()
+        {
+            // A keyword colour cannot be a standard colour inside _colourPalette
+            foreach (var keyword in _keywords)
+            {
+                _keywordColourPalette.AddColour(keyword.Colour);
+                if (_colourPalette.Colours.Contains(keyword.Colour))
+                    _colourPalette.Colours.Remove(keyword.Colour);
+            }
         }
 
         public string Generate(string message)
@@ -40,13 +60,16 @@ namespace Pyxcell
             if (string.IsNullOrEmpty(message))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(message));
 
-            _text = message.ToCharArray();
+            _words = Regex.Split(message, @"\s+|(?!^)(?=\p{P})|(?<=\p{P})(?!$)").ToList();
 
             return Encode();
         }
 
         private string Encode()
         {
+            if (_colourPalette.Colours.Count == 0)
+                throw new Exception("Colour palette must contain at least one colour.");
+                
             const int width = 700;
             const int height = 700;
 
@@ -64,10 +87,18 @@ namespace Pyxcell
 
         private void EncodeText(Image<Rgba32> image)
         {
-            foreach (var character in _text)
+            foreach (var word in _words)
             {
-                var letter = _characters.First(x => x.Char ==  character);
-                PaintGrid(image, letter.Fill);
+                Rgba32 colour = default;
+                var keyword = _keywords.FirstOrDefault(x => x.Word == word);
+                if (keyword != null)
+                    colour = keyword.Colour;
+                        
+                foreach (var letter in word.Select(character => _characters.First(x => x.Char ==  character)))
+                {
+                    PaintGrid(image, letter.Fill, colour);
+                }
+               
             }
             
             EncodeDelCharacter(image);
