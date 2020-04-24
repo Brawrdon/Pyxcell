@@ -1,4 +1,4 @@
-﻿namespace Pyxcell.Encoder
+﻿namespace Pyxcell
 {
     public interface IEncoder
     {

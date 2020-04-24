@@ -8,7 +8,7 @@
     <Title>Pyxcell</Title>
     <Copyright>Brawrdon 2020</Copyright>
     <PackageProjectUrl>https://github.com/Brawrdon/Pyxcell</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/Brawrdon/Pyxcell/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseUrl></PackageLicenseUrl>
     <RepositoryUrl>https://github.com/Brawrdon/Pyxcell</RepositoryUrl>
     <PackageVersion>0.5.1-alpha</PackageVersion>
   </PropertyGroup>

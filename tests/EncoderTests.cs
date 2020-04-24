@@ -1,24 +1,24 @@
 using System.Collections.Generic;
+using Pyxcell;
 using Pyxcell.Common;
-using Pyxcell.Encoder;
 using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace PyxcellTests
 {
-    public class PyxcellTest
+    public class EncoderTests
     {
     
         private readonly ITestOutputHelper output;
 
-        public PyxcellTest(ITestOutputHelper output)
+        public EncoderTests(ITestOutputHelper output)
         {
             this.output = output;
         }
 
         [Fact]
-        public void GetSentiment()
+        public void GenerateEncodedExample()
         {
             var colours = new List<Rgba32>
             {
