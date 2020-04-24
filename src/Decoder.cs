@@ -27,7 +27,6 @@ namespace Pyxcell
     {
         private readonly string _imagePath;
         private readonly DecodedImage _decodedImage;
-        private readonly IColourPalette _colourPalette;
         private int _row;
         private int _column;
 
@@ -36,7 +35,6 @@ namespace Pyxcell
             _imagePath = imagePath;
             _row = 0;
             _column = 0;
-            _colourPalette = new ColourPalette();
             _decodedImage = new DecodedImage();
         }
 
@@ -79,7 +77,7 @@ namespace Pyxcell
                 if (controlGrid.Fill.SequenceEqual(grid.Fill))
                     isControlChar = true;
                 else
-                    _colourPalette.AddColour(grid.Colour);
+                    _decodedImage.ColourPalette.AddColour(grid.Colour);
             }
         }
 
