@@ -21,10 +21,10 @@ namespace PyxcellTests
            var decodedImage = decoder.Decode();
            
            Assert.Equal((char) 32, decodedImage.Letters[0].Char);
-           Assert.Equal(new int[] {0, 0, 0, 1, 0, 1, 1}, decodedImage.Letters[0].Fill);
+           Assert.Equal(new int[] {1, 1, 0, 0, 1, 0, 0}, decodedImage.Letters[0].Fill);
            
            Assert.Equal((char) 33, decodedImage.Letters[1].Char);
-           Assert.Equal(new int[] {0, 0, 1, 0, 1, 1, 1}, decodedImage.Letters[1].Fill);
+           Assert.Equal(new int[] {1, 1, 0, 1, 0, 0, 1}, decodedImage.Letters[1].Fill);
         }
     }
 }
