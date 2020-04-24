@@ -2,15 +2,13 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <PackageId>Pyxcell</PackageId>
-    <Version>0.5.1-alpha</Version>
     <Authors>Brawrdon</Authors>
     <Company>Brawrdon</Company>
     <Title>Pyxcell</Title>
-    <Copyright>Brawrdon 2020</Copyright>
+    <Copyright>Brawrdon, 2020</Copyright>
     <PackageProjectUrl>https://github.com/Brawrdon/Pyxcell</PackageProjectUrl>
-    <PackageLicenseUrl></PackageLicenseUrl>
     <RepositoryUrl>https://github.com/Brawrdon/Pyxcell</RepositoryUrl>
-    <PackageVersion>0.5.1-alpha</PackageVersion>
+    <PackageVersion>0.6.0-alpha</PackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
