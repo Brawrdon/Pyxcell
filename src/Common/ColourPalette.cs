@@ -18,12 +18,17 @@ namespace Pyxcell.Common
 
         public void AddColour(Rgba32 colour)
         {
-            Colours.Add(colour);
+            if (!Colours.Contains(colour))
+                Colours.Add(colour);
         }
 
         public void AddColours(IEnumerable<Rgba32> colours)
         {
-            Colours.AddRange(colours);
+            foreach (var colour in colours)
+            {
+                if (!Colours.Contains(colour))
+                    Colours.Add(colour);
+            }
         }
 
         public Rgba32 SelectRandomColour()

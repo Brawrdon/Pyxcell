@@ -17,24 +17,32 @@ namespace PyxcellTests
             this.output = output;
         }
 
+        //ToDo: Write more tests!
         [Fact]
         public void GenerateEncodedExample()
         {
             var colours = new List<Rgba32>
             {
-                new Rgba32(10, 10, 200),
-                new Rgba32(234, 232, 1),
-                new Rgba32(124, 124, 23),
-                new Rgba32(211, 111, 30),
-                new Rgba32(100, 50, 35),
-                new Rgba32(100, 120, 200),
-                new Rgba32(100, 200, 200),
-                new Rgba32(100, 10, 10),
+                Rgba32.Aqua,
+                Rgba32.Chocolate,
+                Rgba32.Fuchsia,
+                Rgba32.Khaki,
+                Rgba32.Blue,
+                Rgba32.Salmon,
+                Rgba32.Coral,
+                Rgba32.DarkGreen,
+                Rgba32.Lime,
+                Rgba32.Crimson
             };
             
             var colourPalette = new ColourPalette(colours);
             
-            var encoder = new Encoder(colourPalette);
+            var encoder = new Encoder(colourPalette, new List<Keyword>
+            {
+                new Keyword { Word = "activate", Colour = Rgba32.Black},
+                new Keyword { Word = "cheese", Colour = Rgba32.Yellow},
+                new Keyword { Word = "rock", Colour = Rgba32.Silver},
+            });
             
             output.WriteLine(encoder.Generate("You need to install the plugin and activate it for your stream on their website." +
                                         "Sometimes, I really like it when my friends buy me food without me asking." +

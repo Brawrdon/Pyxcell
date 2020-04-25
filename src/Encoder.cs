@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Pyxcell.Common;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
@@ -13,24 +14,43 @@ namespace Pyxcell
     {
         private const int MaxCharacters = 2400;
         private readonly IColourPalette _colourPalette;
+        private readonly IColourPalette _keywordColourPalette;
+        private readonly List<Keyword> _keywords;
         private readonly List<CharacterGrid> _characters;
         private readonly Random _random;
-        private List<int[]> _variations;
-        private char[] _text;
+        private List<int[]> _possibleFills;
+        private List<string> _words;
         private int _row;
         private int _column;
 
 
-        public Encoder(IColourPalette colourPalette)
+        public Encoder(IColourPalette colourPalette, List<Keyword> keywords = null)
         {
-            _random = new Random();
-            _variations = new List<int[]>();
-            _characters = new List<CharacterGrid>();
             _colourPalette = colourPalette ?? throw new ArgumentNullException(nameof(colourPalette));
+            _keywordColourPalette = new ColourPalette();
+            _keywords = keywords ?? new List<Keyword>();
+            
+            SetPalettes();
+
+            _random = new Random();
+            _possibleFills = new List<int[]>();
+            _characters = new List<CharacterGrid>();
+            
             _column = 0;
             _row = 0;
-            GenerateVariations();
+            GenerateFills();
             MapCharacters();
+        }
+
+        private void SetPalettes()
+        {
+            // A keyword colour cannot be a standard colour inside _colourPalette
+            foreach (var keyword in _keywords)
+            {
+                _keywordColourPalette.AddColour(keyword.Colour);
+                if (_colourPalette.Colours.Contains(keyword.Colour))
+                    _colourPalette.Colours.Remove(keyword.Colour);
+            }
         }
 
         public string Generate(string message)
@@ -40,13 +60,26 @@ namespace Pyxcell
             if (string.IsNullOrEmpty(message))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(message));
 
-            _text = message.ToCharArray();
+            const string pattern = @"^(\s+|\d+|\w+|[^\d\s\w])+$";
+            _words = new List<string>();
 
+            var regex = new Regex(pattern);
+
+            if (!regex.IsMatch(message)) 
+                return Encode();
+           
+            var match = regex.Match(message);
+            foreach (Capture capture in match.Groups[1].Captures)
+                _words.Add(capture.Value);
+           
             return Encode();
         }
 
         private string Encode()
         {
+            if (_colourPalette.Colours.Count == 0)
+                throw new Exception("Colour palette must contain at least one colour.");
+                
             const int width = 700;
             const int height = 700;
 
@@ -54,6 +87,7 @@ namespace Pyxcell
 
             EncodeLetterMappings(image);
             EncodeColourPalette(image);
+            EncodeKeyWordColourPalette(image);
             EncodeText(image);
 
             using var outputStream = new MemoryStream();
@@ -64,10 +98,18 @@ namespace Pyxcell
 
         private void EncodeText(Image<Rgba32> image)
         {
-            foreach (var character in _text)
+            foreach (var word in _words)
             {
-                var letter = _characters.First(x => x.Char ==  character);
-                PaintGrid(image, letter.Fill);
+                Rgba32 colour = default;
+                var keyword = _keywords.FirstOrDefault(x => x.Word == word);
+                if (keyword != null)
+                    colour = keyword.Colour;
+                        
+                foreach (var letter in word.Select(character => _characters.First(x => x.Char ==  character)))
+                {
+                    PaintGrid(image, letter.Fill, colour);
+                }
+               
             }
             
             EncodeDelCharacter(image);
@@ -79,9 +121,19 @@ namespace Pyxcell
         {
             foreach (var colour in _colourPalette.Colours)
             {
-                var choice = _random.Next(0, _variations.Count);
+                var fill = SelectFill();
+                PaintGrid(image, fill, colour);
+            }
             
-                PaintGrid(image, _variations[choice], colour);
+            EncodeDelCharacter(image);
+        }
+        
+        private void EncodeKeyWordColourPalette(Image<Rgba32> image)
+        {
+            foreach (var colour in _keywordColourPalette.Colours)
+            {
+                var fill = SelectFill();
+                PaintGrid(image, fill, colour);
             }
             
             EncodeDelCharacter(image);
@@ -141,7 +193,7 @@ namespace Pyxcell
         }
 
 
-        private void GenerateVariations()
+        private void GenerateFills()
         {
             // We are supporting ASCII characters 32 - 127 giving us a total of 95 characters.
             // These characters are going to be randomly mapped to a shape which is defined by a 
@@ -152,29 +204,32 @@ namespace Pyxcell
             {
                 var binary = Convert.ToString(i, 2).PadLeft(7, '0');
                 var binaryAsCharArray = binary.ToCharArray();
-                _variations.Add(binaryAsCharArray.Select(x => int.Parse(x.ToString())).ToArray());
+                _possibleFills.Add(binaryAsCharArray.Select(x => int.Parse(x.ToString())).ToArray());
             }
         }
 
+
+        private int[] SelectFill()
+        {
+            if (_possibleFills.Count == 0)
+                throw new Exception("Ran out of possible grid fills.");
+            
+            var tmpPossibleFills = new List<int[]>(_possibleFills);
+            var index = _random.Next(tmpPossibleFills.Count - 1);
+            var fill = tmpPossibleFills[index];
+            tmpPossibleFills.RemoveAt(index);
+            _possibleFills = tmpPossibleFills;
+            return fill;
+        }
+        
         private void MapCharacters()
         {
-            // Temporary variable just to keep things tidy.
-            var tmpVariations = new List<int[]>(_variations);
-
             for (var i = 32; i <= 127; i++)
             {
-                var index = _random.Next(tmpVariations.Count - 1);
-                var colour  = _colourPalette.SelectRandomColour();
-
-                var letter = new CharacterGrid((char) i, tmpVariations[index]);
-
-                // Removing the variation prevents us from accidentally picking the same fill more than once.
-                tmpVariations.RemoveAt(index);
-
+                var fill = SelectFill(); 
+                var letter = new CharacterGrid((char) i, fill);
                 _characters.Add(letter);
             }
-
-            _variations = tmpVariations;
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Pyxcell.Common;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
@@ -12,13 +13,18 @@ namespace Pyxcell
     {
         
         public  IColourPalette ColourPalette { get; }
+        public  IColourPalette KeywordColourPalette { get; }
+
         public List<CharacterGrid> CharacterMappings { get;}
+        public List<Keyword> Keywords;
         public string Text;
         
         internal DecodedImage()
         {
             ColourPalette = new ColourPalette();
+            KeywordColourPalette = new ColourPalette();
             CharacterMappings = new List<CharacterGrid>();
+            Keywords = new List<Keyword>();
             Text = Empty;
         }
     }
@@ -44,10 +50,50 @@ namespace Pyxcell
             {
                 DecodeLetterMappings(image);
                 DecodeColourPalette(image);
+                DecodeKeywordsColourPalette(image);
                 DecodeText(image);
+                FindKeywords(image);
+
             }
 
             return _decodedImage;
+        }
+
+        private void FindKeywords(Image<Rgba32> image)
+        {
+            const string pattern = @"^(\s+|\d+|\w+|[^\d\s\w])+$";
+            var words = new List<string>();
+
+            var regex = new Regex(pattern);
+
+            if (!regex.IsMatch(_decodedImage.Text)) 
+                return;
+           
+            var match = regex.Match(_decodedImage.Text);
+            foreach (Capture capture in match.Groups[1].Captures)
+                words.Add(capture.Value);
+
+            var index = (_decodedImage.CharacterMappings.Count + _decodedImage.ColourPalette.Colours.Count + 1 +
+                         _decodedImage.KeywordColourPalette.Colours.Count + 1) - 1;
+            foreach (var word in words)
+            {
+                index += word.Length;
+
+                _column = index % 50;
+                _row = index / 50;
+                var grid = DecodeColourGrid(image);
+
+                if (_decodedImage.KeywordColourPalette.Colours.Contains(grid.Colour))
+                {
+                    _decodedImage.Keywords.Add(new Keyword { Colour = grid.Colour, Word = word});
+                }
+
+            }
+        }
+
+        private void Encode()
+        {
+            throw new System.NotImplementedException();
         }
 
         private void DecodeText(Image<Rgba32> image)
@@ -65,7 +111,8 @@ namespace Pyxcell
                     _decodedImage.Text += grid.Char;
             }
         }
-        
+
+
         private void DecodeColourPalette(Image<Rgba32> image)
         {
             var isControlChar = false;
@@ -78,6 +125,21 @@ namespace Pyxcell
                     isControlChar = true;
                 else
                     _decodedImage.ColourPalette.AddColour(grid.Colour);
+            }
+        }
+        
+        private void DecodeKeywordsColourPalette(Image<Rgba32> image)
+        {
+            var isControlChar = false;
+            while (!isControlChar)
+            {
+                var grid = DecodeColourGrid(image);
+                var controlGrid = _decodedImage.CharacterMappings.First(x => char.IsControl(x.Char));
+
+                if (controlGrid.Fill.SequenceEqual(grid.Fill))
+                    isControlChar = true;
+                else
+                    _decodedImage.KeywordColourPalette.AddColour(grid.Colour);
             }
         }
 
@@ -145,8 +207,8 @@ namespace Pyxcell
                     
                     var tmpColour = new Rgba32(pixelRowSpan[x].PackedValue);
                     colourMapping.Fill[indexForFill] = tmpColour.Equals(Rgba32.Transparent) || tmpColour.Equals(new Rgba32(0, 0, 0, 0)) ? 0 : 1;
-                   
-                    if (!tmpColour.Equals(Rgba32.Transparent) || !tmpColour.Equals(new Rgba32(0, 0, 0, 0)))
+
+                    if (!tmpColour.Equals(Rgba32.Transparent) && !tmpColour.Equals(new Rgba32(0, 0, 0, 0)))
                         colourMapping.Colour = tmpColour;
                 }
             }
