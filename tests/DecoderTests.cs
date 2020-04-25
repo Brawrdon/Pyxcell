@@ -29,7 +29,7 @@ namespace PyxcellTests
         public void DecodeColourPalettes()
         {
             Assert.Equal(10, _decodedImage.ColourPalette.Colours.Count);
-            Assert.Single(_decodedImage.KeywordColourPalette.Colours);
+            Assert.Equal(3, _decodedImage.KeywordColourPalette.Colours.Count);
         }
         
         [Fact]
