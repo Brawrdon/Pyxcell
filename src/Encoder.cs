@@ -87,7 +87,7 @@ namespace Pyxcell
 
             EncodeLetterMappings(image);
             EncodeColourPalette(image);
-            EncodeKeyWordColourPalette(image);
+            EncodeKeywordColourPalette(image);
             EncodeText(image);
 
             using var outputStream = new MemoryStream();
@@ -128,7 +128,7 @@ namespace Pyxcell
             EncodeDelCharacter(image);
         }
         
-        private void EncodeKeyWordColourPalette(Image<Rgba32> image)
+        private void EncodeKeywordColourPalette(Image<Rgba32> image)
         {
             foreach (var colour in _keywordColourPalette.Colours)
             {

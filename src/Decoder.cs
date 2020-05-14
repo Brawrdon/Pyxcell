@@ -91,11 +91,6 @@ namespace Pyxcell
             }
         }
 
-        private void Encode()
-        {
-            throw new System.NotImplementedException();
-        }
-
         private void DecodeText(Image<Rgba32> image)
         {
             var isControlChar = false;
