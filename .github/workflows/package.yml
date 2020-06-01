@@ -26,8 +26,6 @@ jobs:
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: coverage.opencover.xml
-
 
   package:
     name: Package & Upload
