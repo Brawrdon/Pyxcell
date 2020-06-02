@@ -1,5 +1,11 @@
-name: Test & Deploy
-on: [push]
+name: Test & Package
+on:
+  push:
+    branches: 
+      - master
+  pull_request:
+    branches:
+      - master
 jobs:
   test:
     name: Run Unit Tests
@@ -10,7 +16,7 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.101
-    - name: Install dependencies
+    - name: Install Dependencies
       run: dotnet restore
     - name: Build Project
       run: dotnet build
@@ -18,8 +24,13 @@ jobs:
       run: cp ./tests/Resources/* ./tests/bin/Debug/netcoreapp3.1/
     - name: Run Tests
       working-directory: ./tests/
-      run: dotnet test --no-restore --verbosity normal
-
+      run: dotnet test --no-restore /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+    - name: Upload Test Coverage to Codecov
+      if: github.ref == 'refs/heads/master'
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: true
 
   package:
     name: Package & Upload
