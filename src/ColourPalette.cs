@@ -7,39 +7,34 @@ namespace Pyxcell
     public class ColourPalette
     {
         // A list of colours
-        public List<GridColour> Colours {get;}
+        public List<Grid> Grids {get;}
 
-        public ColourPalette(List<GridColour> colours = null)
+        public ColourPalette(List<Grid> grids = null)
         {
-            Colours = colours ?? new List<GridColour>();
+            Grids = grids ?? new List<Grid>();
         }
 
-        public bool AddCharacterColour(CharacterColour characterColour)
+        public bool AddCharacterGrid(CharacterGrid characterGrid)
         {
-            var gridColour = Colours.FirstOrDefault(x => x.Rgba32 == characterColour.Rgba32);
+            return AddGrid(characterGrid, () => Grids.OfType<CharacterGrid>().Any(x => x.Character == characterGrid.Character));
+        }
 
-            if(gridColour == null)
-            {
-                Colours.Add(characterColour);
-                return true;
-            }
-
-            return false;
+        public bool AddKeywordGrid(KeywordGrids keywordGrids)
+        {            
+            return AddGrid(keywordGrids, () => Grids.OfType<KeywordGrids>().Any(x => x.Keyword == keywordGrids.Keyword));
         }
         
-        public bool AddKeywordColour(KeywordColour keywordColour)
+        private bool AddGrid(Grid grid, Func<bool> FindChar) 
         {
-            var gridColour = Colours.FirstOrDefault(x => x.Rgba32 == keywordColour.Rgba32) as KeywordColour;
+            // Check to see if the character exists
+            var valueExists = FindChar();
+            
+            // Check to see if the colour exists
+            var colourExists = Grids.Any(x => x.Rgba32 == grid.Rgba32);
 
-            if(gridColour == null)
+            if(!valueExists && !colourExists)
             {
-                Colours.Add(keywordColour);
-                return true;
-            }
-
-            if(gridColour.Keyword != keywordColour.Keyword)
-            {
-                Colours.Add(keywordColour);
+                Grids.Add(grid);
                 return true;
             }
 
