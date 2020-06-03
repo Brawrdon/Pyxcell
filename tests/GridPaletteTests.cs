@@ -1,3 +1,4 @@
+using System;
 using Pyxcell.Grids;
 using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
@@ -15,7 +16,7 @@ namespace Pyxcell
         }
 
         [Fact]
-        public void Constructor_NullArgument_AssignsEmptyList()
+        public void Constructor()
         {
             // Arrange
             var gridPallete = new GridPalette();
@@ -26,7 +27,39 @@ namespace Pyxcell
         }
 
         [Fact]
-        public void AddCharacterGrid_DoesNotContainChar_ReturnTrueAndAddToGridsList()
+        public void AddColour_ColourNotInPalette_AddToPalette()
+        {
+            // Arrange
+            var gridPallete = new GridPalette();
+
+            // Act
+            gridPallete.AddColour(Rgba32.Red);
+            gridPallete.AddColour(Rgba32.Blue);
+
+            // Assert
+            Assert.Equal(2, gridPallete.Colours.Count);
+            Assert.Contains(Rgba32.Red, gridPallete.Colours);
+            Assert.Contains(Rgba32.Blue, gridPallete.Colours);
+        }
+
+
+        [Fact]
+        public void AddColour_ColourExistsInKeyword_ThrowException()
+        {
+            // Arrange
+            var gridPallete = new GridPalette();
+            var hello = new KeywordGrids("hello", Rgba32.Red);
+
+            // Act
+            gridPallete.AddKeywordGrids(hello);
+
+            // Assert
+            Assert.Throws<Exception>(() => gridPallete.AddColour(Rgba32.Red));
+            Assert.DoesNotContain(Rgba32.Red, gridPallete.Colours);
+        }
+
+        [Fact]
+        public void AddCharacterGrid_DoesNotContainChar_AddToGridsList()
         {
             // Arrange
             var gridPallete = new GridPalette();
@@ -34,39 +67,35 @@ namespace Pyxcell
             var b = new CharacterGrid('b');
 
             // Act
-            var aResult = gridPallete.AddCharacterGrid(a);
-            var bResult = gridPallete.AddCharacterGrid(b);
+            gridPallete.AddCharacterGrid(a);
+            gridPallete.AddCharacterGrid(b);
 
             // Assert
-            Assert.True(aResult);
-            Assert.True(bResult);
             Assert.Equal(2, gridPallete.Grids.Count);
             Assert.Contains(a, gridPallete.Grids);
             Assert.Contains(b, gridPallete.Grids);
         }
 
         [Fact]
-        public void AddCharacterGrid_ContainsChar_ReturnFalse()
+        public void AddCharacterGrid_ContainsChar_ThrowException()
         {
             // Arrange
             var gridPallete = new GridPalette();
-            var redA = new CharacterGrid('a');
-            var blueA = new CharacterGrid('a');
+            var a1 = new CharacterGrid('a');
+            var a2 = new CharacterGrid('a');
 
             // Act
-            var redAResult = gridPallete.AddCharacterGrid(redA);
-            var blueAResult = gridPallete.AddCharacterGrid(blueA);
+            gridPallete.AddCharacterGrid(a1);
 
             // Assert
-            Assert.True(redAResult);
-            Assert.False(blueAResult);
+            Assert.Throws<Exception>(() => gridPallete.AddCharacterGrid(a2));
             Assert.Single(gridPallete.Grids);
-            Assert.Contains(redA, gridPallete.Grids);
-            Assert.DoesNotContain(blueA, gridPallete.Grids);
+            Assert.Contains(a1, gridPallete.Grids);
+            Assert.DoesNotContain(a2, gridPallete.Grids);
         }
 
         [Fact]
-        public void AddKeywordGrid_DoesNotContainKeyword_ReturnTrueAndAddToGridsList()
+        public void AddKeywordGrid_DoesNotContainKeyword_AddToGridsList()
         {
             // Arrange
             var gridPallete = new GridPalette();
@@ -74,19 +103,17 @@ namespace Pyxcell
             var world = new KeywordGrids("world", Rgba32.Blue);
 
             // Act
-            var helloResult = gridPallete.AddKeywordGrids(hello);
-            var worldResult = gridPallete.AddKeywordGrids(world);
+            gridPallete.AddKeywordGrids(hello);
+            gridPallete.AddKeywordGrids(world);
 
             // Assert
-            Assert.True(helloResult);
-            Assert.True(worldResult);
             Assert.Equal(2, gridPallete.Grids.Count);
             Assert.Contains(hello, gridPallete.Grids);
             Assert.Contains(world, gridPallete.Grids);
         }
 
         [Fact]
-        public void AddKeywordGrid_ContainsKeyword_ReturnFalse()
+        public void AddKeywordGrid_ContainsKeyword_ThrowException()
         {
             // Arrange
             var gridPallete = new GridPalette();
@@ -94,36 +121,29 @@ namespace Pyxcell
             var blueHello = new KeywordGrids("hello", Rgba32.Blue);
 
             // Act
-            var redHelloResult = gridPallete.AddKeywordGrids(redHello);
-            var blueHelloResult = gridPallete.AddKeywordGrids(blueHello);
-
+            gridPallete.AddKeywordGrids(redHello);
+        
             // Assert
-            Assert.True(redHelloResult);
-            Assert.False(blueHelloResult);
+            Assert.Throws<Exception>(() => gridPallete.AddKeywordGrids(blueHello));
             Assert.Single(gridPallete.Grids);
             Assert.Contains(redHello, gridPallete.Grids);
             Assert.DoesNotContain(blueHello, gridPallete.Grids);
         }
 
         [Fact]
-        public void AddKeywordGrid_ContainsKeyword_ReturnFalse()
+        public void AddKeywordGrid_ColourExistsInPalette_ThrowException()
         {
             // Arrange
             var gridPallete = new GridPalette();
-            var redHello = new KeywordGrids("hello", Rgba32.Red);
-            var blueHello = new KeywordGrids("hello", Rgba32.Blue);
+            gridPallete.AddColour(Rgba32.Red);
 
-            // Act
-            var redHelloResult = gridPallete.AddKeywordGrids(redHello);
-            var blueHelloResult = gridPallete.AddKeywordGrids(blueHello);
+            var hello = new KeywordGrids("hello", Rgba32.Red);
 
             // Assert
-            Assert.True(redHelloResult);
-            Assert.False(blueHelloResult);
-            Assert.Single(gridPallete.Grids);
-            Assert.Contains(redHello, gridPallete.Grids);
-            Assert.DoesNotContain(blueHello, gridPallete.Grids);
+            Assert.Throws<Exception>(() => gridPallete.AddKeywordGrids(hello));
+            Assert.DoesNotContain(hello, gridPallete.Grids);
         }
+
         
     }
 }

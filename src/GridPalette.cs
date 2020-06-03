@@ -8,37 +8,45 @@ namespace Pyxcell
 {
     public class GridPalette
     {
-        
-        public List<Rgba32> Colours { get; }
+        public List<Rgba32> Colours { get { return new List<Rgba32>(_colours); } }
         public List<Grid> Grids { get; }
 
         private List<int[]> _availablePatterns;
-        public GridPalette(List<Grid> grids = null, List<Rgba32> colours = null)
-        {
-            Grids = grids ?? new List<Grid>();
-            Colours = colours ?? new List<Rgba32>();
+        private List<Rgba32> _colours;
 
+        public GridPalette()
+        {
+            Grids = new List<Grid>();
+
+            _colours =  new List<Rgba32>();
             _availablePatterns = GenerateGridPatterns();
         }
 
-        public bool AddCharacterGrid(CharacterGrid characterGrid)
+        public void AddColour(Rgba32 colour)
+        {
+            if (_colours.Contains(colour))
+                throw new Exception($"The palette already contains the colour {colour}.");
+
+            if (Grids.OfType<KeywordGrids>().Any(x => x.Colour == colour))
+                throw new Exception($"A keyword already uses the colour {colour}.");
+
+            _colours.Add(colour);
+        }
+
+        public void AddCharacterGrid(CharacterGrid characterGrid)
         {
             var result = AddGrid(characterGrid, () => Grids.OfType<CharacterGrid>().Any(x => x.Character == characterGrid.Character));
 
             if(!result)
                 throw new Exception($"Char {characterGrid.Character} already exists.");
-            
-            return result;
         }
 
-        public bool AddKeywordGrids(KeywordGrids keywordGrids)
+        public void AddKeywordGrids(KeywordGrids keywordGrids)
         {            
-            var result = AddGrid(keywordGrids, () => Grids.OfType<KeywordGrids>().Any(x => x.Keyword == keywordGrids.Keyword) && !Colours.Contains(keywordGrids.Colour));
+            var result = AddGrid(keywordGrids, () => Grids.OfType<KeywordGrids>().Any(x => x.Keyword == keywordGrids.Keyword) || _colours.Contains(keywordGrids.Colour));
 
             if(!result)
-                throw new Exception($"Keyword {keywordGrids.Keyword} already exists or");
-            
-            return result;
+                throw new Exception($"Keyword {keywordGrids.Keyword} already exists or the keyword's colour {keywordGrids.Colour} is already in the palette.");
         }
         
         private bool AddGrid(Grid grid, Func<bool> FindGrid) 
