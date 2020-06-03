@@ -1,15 +1,17 @@
 using System.Collections.Generic;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Pyxcell
+namespace Pyxcell.Grids
 {
-    public abstract class Grid
+    public abstract class Grid : IGrid
     {
         public Rgba32 Rgba32 { get; }
+        public int[] Pattern { get; }
 
         public Grid(Rgba32 colour)
         {
             Rgba32 = colour;
+            Pattern = new int[14];
         }
     }
 
@@ -39,5 +41,4 @@ namespace Pyxcell
             }
         }
     }
-
 }
