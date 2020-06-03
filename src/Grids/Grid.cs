@@ -5,12 +5,10 @@ namespace Pyxcell.Grids
 {
     public abstract class Grid : IGrid
     {
-        public Rgba32 Rgba32 { get; }
         public int[] Pattern { get; }
 
-        public Grid(Rgba32 colour)
+        public Grid()
         {
-            Rgba32 = colour;
             Pattern = new int[14];
         }
     }
@@ -19,7 +17,7 @@ namespace Pyxcell.Grids
     {
         public char Character { get; }
 
-        public CharacterGrid(Rgba32 colour, char character) : base(colour)
+        public CharacterGrid(char character) : base()
         {
             Character = character;
         }
@@ -29,15 +27,17 @@ namespace Pyxcell.Grids
     {
         public List<CharacterGrid> CharacterGrids { get; }
         public string Keyword { get; }
+        public Rgba32 Colour { get; }
 
-        public KeywordGrids(Rgba32 colour, string keyword) : base(colour)
+        public KeywordGrids(string keyword, Rgba32 colour) : base()
         {
             Keyword = keyword;
+            Colour = colour;
             CharacterGrids = new List<CharacterGrid>();
 
             foreach (var character in keyword.ToCharArray())
             {
-                CharacterGrids.Add(new CharacterGrid(colour, character));
+                CharacterGrids.Add(new CharacterGrid(character));
             }
         }
     }

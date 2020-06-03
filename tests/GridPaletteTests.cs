@@ -30,8 +30,8 @@ namespace Pyxcell
         {
             // Arrange
             var gridPallete = new GridPalette();
-            var a = new CharacterGrid(Rgba32.Red, 'a');
-            var b = new CharacterGrid(Rgba32.Blue, 'b');
+            var a = new CharacterGrid('a');
+            var b = new CharacterGrid('b');
 
             // Act
             var aResult = gridPallete.AddCharacterGrid(a);
@@ -50,8 +50,8 @@ namespace Pyxcell
         {
             // Arrange
             var gridPallete = new GridPalette();
-            var redA = new CharacterGrid(Rgba32.Red, 'a');
-            var blueA = new CharacterGrid(Rgba32.Blue, 'a');
+            var redA = new CharacterGrid('a');
+            var blueA = new CharacterGrid('a');
 
             // Act
             var redAResult = gridPallete.AddCharacterGrid(redA);
@@ -70,8 +70,8 @@ namespace Pyxcell
         {
             // Arrange
             var gridPallete = new GridPalette();
-            var hello = new KeywordGrids(Rgba32.Red, "hello");
-            var world = new KeywordGrids(Rgba32.Blue, "world");
+            var hello = new KeywordGrids("hello", Rgba32.Red);
+            var world = new KeywordGrids("world", Rgba32.Blue);
 
             // Act
             var helloResult = gridPallete.AddKeywordGrids(hello);
@@ -90,8 +90,8 @@ namespace Pyxcell
         {
             // Arrange
             var gridPallete = new GridPalette();
-            var redHello = new KeywordGrids(Rgba32.Red, "hello");
-            var blueHello = new KeywordGrids(Rgba32.Blue, "hello");
+            var redHello = new KeywordGrids("hello", Rgba32.Red);
+            var blueHello = new KeywordGrids("hello", Rgba32.Blue);
 
             // Act
             var redHelloResult = gridPallete.AddKeywordGrids(redHello);
@@ -106,23 +106,23 @@ namespace Pyxcell
         }
 
         [Fact]
-        public void AddGrid_ColourExists_ReturnFalse()
+        public void AddKeywordGrid_ContainsKeyword_ReturnFalse()
         {
-            // Arrage
+            // Arrange
             var gridPallete = new GridPalette();
-            var a = new CharacterGrid(Rgba32.Red, 'a');
-            var b = new CharacterGrid(Rgba32.Red, 'b');
+            var redHello = new KeywordGrids("hello", Rgba32.Red);
+            var blueHello = new KeywordGrids("hello", Rgba32.Blue);
 
             // Act
-            var aResult = gridPallete.AddCharacterGrid(a);
-            var bResult = gridPallete.AddCharacterGrid(b);
+            var redHelloResult = gridPallete.AddKeywordGrids(redHello);
+            var blueHelloResult = gridPallete.AddKeywordGrids(blueHello);
 
             // Assert
-            Assert.True(aResult);
-            Assert.False(bResult);
+            Assert.True(redHelloResult);
+            Assert.False(blueHelloResult);
             Assert.Single(gridPallete.Grids);
-            Assert.Contains(a, gridPallete.Grids);
-            Assert.DoesNotContain(b, gridPallete.Grids);
+            Assert.Contains(redHello, gridPallete.Grids);
+            Assert.DoesNotContain(blueHello, gridPallete.Grids);
         }
         
     }
