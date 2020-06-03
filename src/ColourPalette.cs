@@ -6,7 +6,6 @@ namespace Pyxcell
 {
     public class ColourPalette
     {
-        // A list of colours
         public List<Grid> Grids {get;}
 
         public ColourPalette(List<Grid> grids = null)
@@ -19,7 +18,7 @@ namespace Pyxcell
             return AddGrid(characterGrid, () => Grids.OfType<CharacterGrid>().Any(x => x.Character == characterGrid.Character));
         }
 
-        public bool AddKeywordGrid(KeywordGrids keywordGrids)
+        public bool AddKeywordGrids(KeywordGrids keywordGrids)
         {            
             return AddGrid(keywordGrids, () => Grids.OfType<KeywordGrids>().Any(x => x.Keyword == keywordGrids.Keyword));
         }

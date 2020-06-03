@@ -31,6 +31,7 @@ namespace Pyxcell
         public KeywordGrids(Rgba32 colour, string keyword) : base(colour)
         {
             Keyword = keyword;
+            CharacterGrids = new List<CharacterGrid>();
 
             foreach (var character in keyword.ToCharArray())
             {
