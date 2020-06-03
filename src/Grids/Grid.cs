@@ -1,19 +1,29 @@
+using System;
 using System.Collections.Generic;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Pyxcell.Grids
 {
-    public abstract class Grid : IGrid
+    internal abstract class Grid
     {
-        public int[] Pattern { get; }
+    }
 
-        public Grid()
-        {
-            Pattern = new int[14];
+    internal class PatternGrid : Grid
+    {
+        private int[] _pattern;
+        public int[] Pattern
+        { 
+            get => _pattern;
+            internal set {
+                if(value.Length != 14)
+                    throw new Exception("Pattern array length must be 14");
+                
+                _pattern = value;
+            }   
         }
     }
 
-    public class CharacterGrid : Grid
+    internal class CharacterGrid : PatternGrid
     {
         public char Character { get; }
 
@@ -23,9 +33,15 @@ namespace Pyxcell.Grids
         }
     }
 
-    public class KeywordGrids : Grid
+    internal class MetadataGrid : PatternGrid
     {
-        public List<CharacterGrid> CharacterGrids { get; }
+        public MetadataGrid() : base()
+        {
+        }
+    }
+
+    internal class KeywordGrids : Grid
+    {
         public string Keyword { get; }
         public Rgba32 Colour { get; }
 
@@ -33,12 +49,6 @@ namespace Pyxcell.Grids
         {
             Keyword = keyword;
             Colour = colour;
-            CharacterGrids = new List<CharacterGrid>();
-
-            foreach (var character in keyword.ToCharArray())
-            {
-                CharacterGrids.Add(new CharacterGrid(character));
-            }
         }
     }
 }
