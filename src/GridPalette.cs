@@ -4,11 +4,11 @@ using System.Linq;
 
 namespace Pyxcell
 {
-    public class ColourPalette
+    public class GridPalette
     {
-        public List<Grid> Grids {get;}
+        public List<Grid> Grids { get; }
 
-        public ColourPalette(List<Grid> grids = null)
+        public GridPalette(List<Grid> grids = null)
         {
             Grids = grids ?? new List<Grid>();
         }
