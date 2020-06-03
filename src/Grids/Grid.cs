@@ -33,10 +33,12 @@ namespace Pyxcell.Grids
         }
     }
 
-    internal class MetadataGrid : PatternGrid
+    internal class ColourDataGrid : PatternGrid
     {
-        public MetadataGrid() : base()
+        public Rgba32 Colour { get; }
+        public ColourDataGrid(Rgba32 colour) : base()
         {
+            Colour = colour;
         }
     }
 

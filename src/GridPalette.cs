@@ -15,8 +15,8 @@ namespace Pyxcell
         private List<Rgba32> _colours;
         private Random _random;
 
-        private const int StartCharacter = 32; // a
-        private const int EndCharacter = 127; // DEL
+        public const int StartCharacter = 32; // a
+        public const int EndCharacter = 127; // DEL
         private const int PatternLimit = (2^7); // 127
 
         public GridPalette(List<Rgba32> colours, Dictionary<string, Rgba32> keywords = null)
