@@ -24,23 +24,19 @@ namespace Pyxcell
                 throw new ArgumentException("Value cannot be null or empty.", nameof(message));
             
             var gridPalette = new GridPalette(colours, keywords);
-            ValidateMessage(message, colours, keywords, gridPalette);
-
-            message = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(message));
+            message = ValidateMessage(message, colours, keywords, gridPalette);
                         
             using var image = new Image<Rgba32>(Width, Height);
-            var painter = new Painter(image, gridPalette);
-            painter.DrawCharacterGrids();
-            painter.DrawColourGrids();
+            var painter = new GridPainter(image, gridPalette, message);
+            painter.Paint();
             
             using var outputStream = new MemoryStream();
             image.SaveAsPng(outputStream);
-            image.Dispose();
             var bytes = outputStream.ToArray();
             return Convert.ToBase64String(bytes);
         }
 
-        private static void ValidateMessage(string message, List<Color> colours, Dictionary<string, Color> keywords, GridPalette gridPalette)
+        private static string ValidateMessage(string message, List<Color> colours, Dictionary<string, Color> keywords, GridPalette gridPalette)
         {
             var characterCount = GridPalette.EndCharacter - GridPalette.StartCharacter;
             var colourCount = gridPalette.Colours.Count() + 1;
@@ -58,6 +54,8 @@ namespace Pyxcell
 
             if (message.Length > maxMessageLength)
                 throw new ArgumentException($"Message should be {maxMessageLength} characters or less.");
+
+            return Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(message));
         }
     }
 }

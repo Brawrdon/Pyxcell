@@ -37,6 +37,27 @@ namespace Pyxcell
                 AddKeywordsToGridsList(keywords);
         }
 
+        public int[] GetPatternFromCharacter(char character)
+        {
+            return Grids.OfType<CharacterGrid>().Single(x => x.Character == character).Pattern;
+        }
+
+        public int[] GetRandomPattern()
+        {
+            if (_availablePatterns.Count == 0)
+                throw new Exception("Grid limit reached.");
+
+            var index = _random.Next(_availablePatterns.Count - 1);
+            var pattern = _availablePatterns[index];
+            _availablePatterns.RemoveAt(index);
+            return pattern;
+        }
+
+        public Color GetRandomColour()
+        {
+            var index = _random.Next(Colours.Count);
+            return Colours[index];
+        }
 
         private List<Color> ValidateColours(List<Color> colours)
         {
@@ -54,7 +75,7 @@ namespace Pyxcell
             for (int i = StartCharacter; i <= EndCharacter; i++)
             {
                 var characterGrid = new CharacterGrid((char) i);
-                characterGrid.Pattern = GetPattern();
+                characterGrid.Pattern = GetRandomPattern();
                 Grids.Add(characterGrid);
             }
  
@@ -83,7 +104,7 @@ namespace Pyxcell
             foreach (var colour in _colours)
             {
                 var colourDataGrid = new ColourDataGrid(colour);
-                colourDataGrid.Pattern = GetPattern();
+                colourDataGrid.Pattern = GetRandomPattern();
                 Grids.Add(colourDataGrid);
             }
         }
@@ -115,16 +136,5 @@ namespace Pyxcell
             }
             return patterns;
         } 
-
-        private int[] GetPattern()
-        {
-            if (_availablePatterns.Count == 0)
-                throw new Exception("Grid limit reached.");
-
-            var index = _random.Next(_availablePatterns.Count - 1);
-            var pattern = _availablePatterns[index];
-            _availablePatterns.RemoveAt(index);
-            return pattern;
-        }
-    }
+    }  
 }
