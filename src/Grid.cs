@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Pyxcell.Grids
+namespace Pyxcell
 {
     internal abstract class Grid
     {

@@ -1,31 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Pyxcell.Grids;
-using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp;
 
 namespace Pyxcell
 {
     internal class GridPalette
     {
-        public List<Rgba32> Colours { get { return new List<Rgba32>(_colours); } }
+        public List<Color> Colours { get { return new List<Color>(_colours); } }
         public List<Grid> Grids { get; }
 
         private List<int[]> _availablePatterns;
-        private List<Rgba32> _colours;
+        private List<Color> _colours;
         private Random _random;
 
         public const int StartCharacter = 32; // a
         public const int EndCharacter = 127; // DEL
-        private const int PatternLimit = (2^7); // 127
+        private const int PatternLimit = 127; // 127
 
-        public GridPalette(List<Rgba32> colours, Dictionary<string, Rgba32> keywords = null)
+        public GridPalette(List<Color> colours, Dictionary<string, Color> keywords = null)
         {
             if(colours == null || !colours.Any())
                 throw new Exception($"{nameof(colours)} is null or empty");
 
             Grids = new List<Grid>();
 
+            _colours = new List<Color>();
             _colours = ValidateColours(colours);
             _availablePatterns = GeneratePatterns();
             _random = new Random();
@@ -36,7 +36,7 @@ namespace Pyxcell
                 AddKeywordsToGridsList(keywords);
         }
 
-        private List<Rgba32> ValidateColours(List<Rgba32> colours)
+        private List<Color> ValidateColours(List<Color> colours)
         {
             foreach (var colour in colours)
             {     
@@ -52,12 +52,13 @@ namespace Pyxcell
             for (int i = StartCharacter; i <= EndCharacter; i++)
             {
                 var characterGrid = new CharacterGrid((char) i);
+                characterGrid.Pattern = GetPattern();
                 Grids.Add(characterGrid);
             }
  
         }
 
-        private void AddKeywordsToGridsList(Dictionary<string, Rgba32> keywords)
+        private void AddKeywordsToGridsList(Dictionary<string, Color> keywords)
         {            
             foreach (var (keyword, colour) in keywords)
             {
@@ -65,9 +66,9 @@ namespace Pyxcell
                     throw new Exception($"Colour {colour} is already used in the main colour palette.");
         
                 var keywordGrids = new KeywordGrids(keyword, colour);
-                var result = Grids.OfType<KeywordGrids>().Any(x => x.Keyword == keywordGrids.Keyword || x.Colour == keywordGrids.Colour);
+                var exists = Grids.OfType<KeywordGrids>().Any(x => x.Keyword == keywordGrids.Keyword || x.Colour == keywordGrids.Colour);
 
-                if(!result)
+                if(exists)
                     throw new Exception($"Keyword {keywordGrids.Keyword} already exists or the keyword's colour {keywordGrids.Colour} is used by another keyword.");
 
                 Grids.Add(keywordGrids);
