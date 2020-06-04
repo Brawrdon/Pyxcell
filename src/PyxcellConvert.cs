@@ -27,10 +27,11 @@ namespace Pyxcell
             ValidateMessage(message, colours, keywords, gridPalette);
 
             message = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(message));
-            
+                        
             using var image = new Image<Rgba32>(Width, Height);
             var painter = new Painter(image, gridPalette);
             painter.DrawCharacterGrids();
+            painter.DrawColourGrids();
             
             using var outputStream = new MemoryStream();
             image.SaveAsPng(outputStream);

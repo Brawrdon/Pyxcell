@@ -31,10 +31,12 @@ namespace Pyxcell
             _random = new Random();
 
             AddCharactersToGridsList();
+            AddColoursToGridList();
 
             if (keywords != null && keywords.Any())
                 AddKeywordsToGridsList(keywords);
         }
+
 
         private List<Color> ValidateColours(List<Color> colours)
         {
@@ -75,6 +77,17 @@ namespace Pyxcell
             }
             
         }
+
+        private void AddColoursToGridList()
+        {
+            foreach (var colour in _colours)
+            {
+                var colourDataGrid = new ColourDataGrid(colour);
+                colourDataGrid.Pattern = GetPattern();
+                Grids.Add(colourDataGrid);
+            }
+        }
+
     
         /// <summary>
         // We are supporting ASCII characters 32 - 127 giving us a total of 95 characters.

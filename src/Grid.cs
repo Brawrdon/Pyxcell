@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Pyxcell
@@ -35,8 +35,8 @@ namespace Pyxcell
 
     internal class ColourDataGrid : PatternGrid
     {
-        public Rgba32 Colour { get; }
-        public ColourDataGrid(Rgba32 colour) : base()
+        public Color Colour { get; }
+        public ColourDataGrid(Color colour) : base()
         {
             Colour = colour;
         }
@@ -45,9 +45,9 @@ namespace Pyxcell
     internal class KeywordGrids : Grid
     {
         public string Keyword { get; }
-        public Rgba32 Colour { get; }
+        public Color Colour { get; }
 
-        public KeywordGrids(string keyword, Rgba32 colour) : base()
+        public KeywordGrids(string keyword, Color colour) : base()
         {
             Keyword = keyword;
             Colour = colour;

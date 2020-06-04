@@ -11,7 +11,9 @@ namespace Pyxcell
     internal class Painter
     {
         public int CurrentPosition { get; set; }
-        public GridPalette GridPalette { get;}
+        public GridPalette GridPalette { get; }
+        
+        public CharacterGrid DelChar { get; }
         public Image<Rgba32> Image { get; }
 
         private Random _random;
@@ -21,6 +23,7 @@ namespace Pyxcell
         {            
             CurrentPosition = 0;
             GridPalette = gridPalette;
+            DelChar = gridPalette.Grids.OfType<CharacterGrid>().First(x => x.Character == ((char) 127));
                         
             Image = image;
 
@@ -33,9 +36,20 @@ namespace Pyxcell
             foreach (var grid in characterGrids)
             {
                 var characterGrid = grid as CharacterGrid;
-                var index = _random.Next(GridPalette.Colours.Count);
-                Draw(characterGrid.Pattern, GridPalette.Colours[index]);
+                Draw(characterGrid.Pattern, GetRandomColour());
             }
+        }
+
+        public void DrawColourGrids()
+        {
+            var colourDataGrids = GridPalette.Grids.OfType<ColourDataGrid>().ToList();
+            foreach (var grid in colourDataGrids)
+            {
+                var colourDataGrid = grid as ColourDataGrid;
+                Draw(colourDataGrid.Pattern, colourDataGrid.Colour);
+            }
+
+            Draw(DelChar.Pattern, GetRandomColour());
         }
 
         public void Draw(int[] pattern, Color colour)
@@ -59,9 +73,10 @@ namespace Pyxcell
                 CurrentPosition++;
         }
 
-        public Color GetRandomColour()
+        private Color GetRandomColour()
         {
-            throw new NotImplementedException();
+            var index = _random.Next(GridPalette.Colours.Count);
+            return GridPalette.Colours[index];
         }
     }
 }
