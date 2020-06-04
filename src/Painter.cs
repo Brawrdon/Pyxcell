@@ -45,11 +45,15 @@ namespace Pyxcell
             
             for (int i = 0; i < pattern.Length; i++)
             {
-                var x = new PointF(startPositionX + i, startPositionY);
-                var y = new PointF(x.X + 1, x.Y + 14);
+                if (pattern[i] == 1)
+                {
+                    var x = new PointF(startPositionX + i, startPositionY);
+                    var y = new PointF(x.X + 1, x.Y + 14);
 
-                var line = new RectangularPolygon(x, y);
-                Image.Mutate(x => x.Fill(colour, line));
+                    var line = new RectangularPolygon(x, y);
+                    Image.Mutate(x => x.Fill(colour, line));
+                }
+                
             }
 
                 CurrentPosition++;
