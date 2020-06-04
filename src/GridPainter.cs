@@ -17,7 +17,6 @@ namespace Pyxcell
         private GridPalette _gridPalette;
         private Image<Rgba32> _image;
         private string _message;
-        private Random _random;
         
         public GridPainter(Image<Rgba32> image, GridPalette gridPalette, string message) 
         {            
@@ -26,7 +25,6 @@ namespace Pyxcell
             _delChar = gridPalette.Grids.OfType<CharacterGrid>().First(x => x.Character == ((char) 127));
             _image = image; 
             _message = message;           
-            _random = new Random();
         }
 
         public void Paint()

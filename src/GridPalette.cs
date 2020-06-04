@@ -5,7 +5,7 @@ using SixLabors.ImageSharp;
 
 namespace Pyxcell
 {
-    internal class GridPalette
+    class GridPalette
     {
         public List<Color> Colours { get { return new List<Color>(_colours); } }
         public List<Grid> Grids { get; }
@@ -13,10 +13,6 @@ namespace Pyxcell
         private List<int[]> _availablePatterns;
         private List<Color> _colours;
         private Random _random;
-
-        public const int StartCharacter = 32; // a
-        public const int EndCharacter = 127; // DEL
-        private const int PatternLimit = 127; // 127
 
         public GridPalette(List<Color> colours, Dictionary<string, Color> keywords = null)
         {
@@ -72,7 +68,7 @@ namespace Pyxcell
 
         private void AddCharactersToGridsList()
         {
-            for (int i = StartCharacter; i <= EndCharacter; i++)
+            for (int i = Constraints.StartCharacter; i <= Constraints.EndCharacter; i++)
             {
                 var characterGrid = new CharacterGrid((char) i);
                 characterGrid.Pattern = GetRandomPattern();
@@ -122,7 +118,7 @@ namespace Pyxcell
         {
             var patterns = new List<int[]>();
 
-            for (var i = 1; i < PatternLimit; i++)
+            for (var i = 1; i < Constraints.PatternLimit; i++)
             {
                 var binary = Convert.ToString(i, 2).PadLeft(7, '0');
                 var binaryAsCharArray = binary.ToCharArray();

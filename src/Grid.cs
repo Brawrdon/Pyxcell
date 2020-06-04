@@ -4,6 +4,8 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Pyxcell
 {
+    // ToDo: Look into using factory or builder pattern for grids?
+
     internal abstract class Grid
     {
     }
@@ -15,8 +17,8 @@ namespace Pyxcell
         { 
             get => _pattern;
             internal set {
-                if(value.Length != 14)
-                    throw new Exception("Pattern array length must be 14");
+                if(value.Length != Constraints.PatternLimit)
+                    throw new Exception($"Pattern array length must be {Constraints.PatternLimit}");
                 
                 _pattern = value;
             }   

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Pyxcell
@@ -30,15 +31,26 @@ namespace Pyxcell
             var painter = new GridPainter(image, gridPalette, message);
             painter.Paint();
             
-            using var outputStream = new MemoryStream();
-            image.SaveAsPng(outputStream);
-            var bytes = outputStream.ToArray();
-            return Convert.ToBase64String(bytes);
+            return image.ToBase64String(PngFormat.Instance);
+        }
+
+
+        public static PyxcellImage Decode(string filePath)
+        {
+            using var image = Image.Load<Rgba32>(filePath);
+            var pyxcellImage = new PyxcellImage(image.ToBase64String(PngFormat.Instance));
+            var gridDecoder = new GridDecoder(image);
+            var character = gridDecoder.DecodeCharacterGrids();
+
+            return pyxcellImage;
+            // ToDo: Verify image is valid first. This could be done on the fly...
+
+
         }
 
         private static string ValidateMessage(string message, List<Color> colours, Dictionary<string, Color> keywords, GridPalette gridPalette)
         {
-            var characterCount = GridPalette.EndCharacter - GridPalette.StartCharacter;
+            var characterCount = Constraints.EndCharacter - Constraints.StartCharacter;
             var colourCount = gridPalette.Colours.Count() + 1;
             var keywordColourCount = gridPalette.Grids.OfType<KeywordGrids>().Count();
 
@@ -57,5 +69,6 @@ namespace Pyxcell
 
             return Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(message));
         }
+   
     }
 }
