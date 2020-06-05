@@ -17,8 +17,8 @@ namespace Pyxcell
         { 
             get => _pattern;
             internal set {
-                if(value.Length != Constraints.PatternLimit)
-                    throw new Exception($"Pattern array length must be {Constraints.PatternLimit}");
+                if(value.Length != Constraints.GridSize)
+                    throw new Exception($"Pattern array length must be {Constraints.GridSize}");
                 
                 _pattern = value;
             }   

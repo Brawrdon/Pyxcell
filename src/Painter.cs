@@ -95,15 +95,15 @@ namespace Pyxcell
 
         public void Draw(int[] pattern, Color colour)
         {
-            var startPositionX = (_currentPosition % 50) * 14;
-            var startPositionY = (_currentPosition / 50) * 14;
+            var startPositionX = (_currentPosition % 50) * Constraints.GridSize;
+            var startPositionY = (_currentPosition / 50) * Constraints.GridSize;
             
             for (int i = 0; i < pattern.Length; i++)
             {
                 if (pattern[i] == 1)
                 {
                     var x = new PointF(startPositionX + i, startPositionY);
-                    var y = new PointF(x.X + 1, x.Y + 14);
+                    var y = new PointF(x.X + 1, x.Y + Constraints.GridSize);
 
                     var line = new RectangularPolygon(x, y);
                     _image.Mutate(x => x.Fill(colour, line));

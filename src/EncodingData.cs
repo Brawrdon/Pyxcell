@@ -120,12 +120,11 @@ namespace Pyxcell
 
             for (var i = 1; i < Constraints.PatternLimit; i++)
             {
-                var binary = Convert.ToString(i, 2).PadLeft(7, '0');
+                var binary = Convert.ToString(i, 2).PadLeft(Constraints.GridSize / 2, '0');
                 var binaryAsCharArray = binary.ToCharArray();
-                var patternSize = binaryAsCharArray.Length * 2;
-                var pattern = new int[14];
+                var pattern = new int[Constraints.GridSize];
                 
-                for (int j = 0; j < patternSize; j++)
+                for (int j = 0; j < Constraints.GridSize; j++)
                     pattern[j] = int.Parse(binaryAsCharArray[j / 2].ToString());
 
                 patterns.Add(pattern);
