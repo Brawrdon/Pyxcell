@@ -28,6 +28,7 @@ namespace Pyxcell
             message = ValidateMessage(message, colours, keywords, encodingData);
                         
             using var image = new Image<Rgba32>(Width, Height);
+            // ToDo: Maybe use extension methods on Image?
             var painter = new Painter(image, message, encodingData);
             painter.Paint();
             
@@ -40,12 +41,19 @@ namespace Pyxcell
             using var image = Image.Load<Rgba32>(filePath);
             var pyxcellImage = new PyxcellImage(image.ToBase64String(PngFormat.Instance));
             var decoder = new Decoder(image);
-            var characters = decoder.DecodeCharacterGrids();
 
             return pyxcellImage;
             // ToDo: Verify image is valid first. This could be done on the fly...
 
 
+        }
+
+        internal static (int, int) GetGridPosition(int gridNumber)
+        {
+            var row = (gridNumber / 50) * Constraints.GridSize;
+            var column = (gridNumber % 50) * Constraints.GridSize;
+
+            return (row, column);
         }
 
         private static string ValidateMessage(string message, List<Color> colours, Dictionary<string, Color> keywords, EncodingData encodingData)
