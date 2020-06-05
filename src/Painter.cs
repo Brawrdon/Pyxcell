@@ -10,19 +10,19 @@ using SixLabors.ImageSharp.Processing;
 
 namespace Pyxcell
 {
-    internal class GridPainter
+    internal class Painter
     {
         private int _currentPosition;
         private CharacterGrid _delChar;
-        private GridPalette _gridPalette;
+        private EncodingData _encodingData;
         private Image<Rgba32> _image;
         private string _message;
         
-        public GridPainter(Image<Rgba32> image, GridPalette gridPalette, string message) 
+        public Painter(Image<Rgba32> image, string message, EncodingData encodingData) 
         {            
             _currentPosition = 0;
-            _gridPalette = gridPalette;
-            _delChar = gridPalette.Grids.OfType<CharacterGrid>().First(x => x.Character == ((char) 127));
+            _encodingData = encodingData;
+            _delChar = encodingData.Grids.OfType<CharacterGrid>().First(x => x.Character == ((char) 127));
             _image = image; 
             _message = message;           
         }
@@ -37,42 +37,42 @@ namespace Pyxcell
 
         private void DrawCharacterGrids()
         {
-            var characterGrids = _gridPalette.Grids.OfType<CharacterGrid>().ToList();
+            var characterGrids = _encodingData.Grids.OfType<CharacterGrid>().ToList();
             foreach (var grid in characterGrids)
             {
                 var characterGrid = grid as CharacterGrid;
-                Draw(characterGrid.Pattern, _gridPalette.GetRandomColour());
+                Draw(characterGrid.Pattern, _encodingData.GetRandomColour());
             }
         }
 
         private void DrawColourGrids()
         {
-            var colourDataGrids = _gridPalette.Grids.OfType<ColourDataGrid>().ToList();
+            var colourDataGrids = _encodingData.Grids.OfType<ColourDataGrid>().ToList();
             foreach (var grid in colourDataGrids)
             {
                 var colourDataGrid = grid as ColourDataGrid;
                 Draw(colourDataGrid.Pattern, colourDataGrid.Colour);
             }
 
-            Draw(_delChar.Pattern, _gridPalette.GetRandomColour());
+            Draw(_delChar.Pattern, _encodingData.GetRandomColour());
         }
 
         private void DrawKeywordColourGrids()
         {
-            var keywordGrids = _gridPalette.Grids.OfType<KeywordGrids>().ToList();
+            var keywordGrids = _encodingData.Grids.OfType<KeywordGrids>().ToList();
             foreach (var grid in keywordGrids)
             {
                 var keywordGrid = grid as KeywordGrids;
-                Draw(_gridPalette.GetRandomPattern(), keywordGrid.Colour);
+                Draw(_encodingData.GetRandomPattern(), keywordGrid.Colour);
             }
 
-            Draw(_delChar.Pattern, _gridPalette.GetRandomColour());
+            Draw(_delChar.Pattern, _encodingData.GetRandomColour());
         }
 
         private void DrawMessage()
         {
             var words = GetWordsFromMessage();
-            var keywordGrids = _gridPalette.Grids.OfType<KeywordGrids>().Cast<KeywordGrids>();
+            var keywordGrids = _encodingData.Grids.OfType<KeywordGrids>().Cast<KeywordGrids>();
             foreach (var word in words)
             {
                 foreach (var character in word)
@@ -81,9 +81,9 @@ namespace Pyxcell
                     if (IsKeyword(word, keywordGrids))
                         colour = keywordGrids.Single(x => x.Keyword == word).Colour;
                     else
-                        colour = _gridPalette.GetRandomColour();
+                        colour = _encodingData.GetRandomColour();
                     
-                    Draw(_gridPalette.GetPatternFromCharacter(character), colour);
+                    Draw(_encodingData.GetPatternFromCharacter(character), colour);
                 } 
             }
         }

@@ -8,14 +8,14 @@ using SixLabors.ImageSharp.Processing;
 namespace Pyxcell
 {
     
-    class GridDecoder
+    class Decoder
     {
         private int _currentPosition;
         private CharacterGrid _delChar;
         public List<Grid> Grids { get; }
         private Image<Rgba32> _image;
 
-        public GridDecoder(Image<Rgba32> image)
+        public Decoder(Image<Rgba32> image)
         {
             _currentPosition = 0;
             _image = image; 

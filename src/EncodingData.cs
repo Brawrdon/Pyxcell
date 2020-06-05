@@ -5,7 +5,7 @@ using SixLabors.ImageSharp;
 
 namespace Pyxcell
 {
-    class GridPalette
+    class EncodingData
     {
         public List<Color> Colours { get { return new List<Color>(_colours); } }
         public List<Grid> Grids { get; }
@@ -14,7 +14,7 @@ namespace Pyxcell
         private List<Color> _colours;
         private Random _random;
 
-        public GridPalette(List<Color> colours, Dictionary<string, Color> keywords = null)
+        public EncodingData(List<Color> colours, Dictionary<string, Color> keywords = null)
         {
             if(colours == null || !colours.Any())
                 throw new Exception($"{nameof(colours)} is null or empty");

@@ -24,11 +24,11 @@ namespace Pyxcell
             if (string.IsNullOrEmpty(message))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(message));
             
-            var gridPalette = new GridPalette(colours, keywords);
-            message = ValidateMessage(message, colours, keywords, gridPalette);
+            var encodingData = new EncodingData(colours, keywords);
+            message = ValidateMessage(message, colours, keywords, encodingData);
                         
             using var image = new Image<Rgba32>(Width, Height);
-            var painter = new GridPainter(image, gridPalette, message);
+            var painter = new Painter(image, message, encodingData);
             painter.Paint();
             
             return image.ToBase64String(PngFormat.Instance);
@@ -39,8 +39,8 @@ namespace Pyxcell
         {
             using var image = Image.Load<Rgba32>(filePath);
             var pyxcellImage = new PyxcellImage(image.ToBase64String(PngFormat.Instance));
-            var gridDecoder = new GridDecoder(image);
-            var character = gridDecoder.DecodeCharacterGrids();
+            var decoder = new Decoder(image);
+            var characters = decoder.DecodeCharacterGrids();
 
             return pyxcellImage;
             // ToDo: Verify image is valid first. This could be done on the fly...
@@ -48,11 +48,11 @@ namespace Pyxcell
 
         }
 
-        private static string ValidateMessage(string message, List<Color> colours, Dictionary<string, Color> keywords, GridPalette gridPalette)
+        private static string ValidateMessage(string message, List<Color> colours, Dictionary<string, Color> keywords, EncodingData encodingData)
         {
             var characterCount = Constraints.EndCharacter - Constraints.StartCharacter;
-            var colourCount = gridPalette.Colours.Count() + 1;
-            var keywordColourCount = gridPalette.Grids.OfType<KeywordGrids>().Count();
+            var colourCount = encodingData.Colours.Count() + 1;
+            var keywordColourCount = encodingData.Grids.OfType<KeywordGrids>().Count();
 
             if (keywordColourCount != 0)
                 keywordColourCount++;
