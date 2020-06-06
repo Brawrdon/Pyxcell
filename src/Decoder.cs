@@ -24,7 +24,7 @@ namespace Pyxcell
         {
             var characters = DecodeCharacterGrids();
             var colours = DecodeColourGrids();
-            var keywordColours = DecodeKeywordColourGrids();
+            var keywordColours = DecodeColourGrids();
             var message = DecodeMessage();
 
             return null;
@@ -78,11 +78,6 @@ namespace Pyxcell
                 throw new Exception($"Could not find colour for grid {_gridNumber}.");
 
             return colour;
-        }
-
-        private object DecodeKeywordColourGrids()
-        {
-            throw new NotImplementedException();
         }
 
         private object DecodeMessage()
