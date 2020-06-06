@@ -41,6 +41,7 @@ namespace Pyxcell
             using var image = Image.Load<Rgba32>(filePath);
             var pyxcellImage = new PyxcellImage(image.ToBase64String(PngFormat.Instance));
             var decoder = new Decoder(image);
+            decoder.Decode();
 
             return pyxcellImage;
             // ToDo: Verify image is valid first. This could be done on the fly...

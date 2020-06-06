@@ -1,54 +1,107 @@
+using System;
 using System.Collections.Generic;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
-using SixLabors.ImageSharp.Drawing.Processing;
+using System.Linq;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace Pyxcell
 {
     
     class Decoder
     {
-        private int _currentPosition;
+        private int _gridNumber;
         private CharacterGrid _delChar;
         public List<Grid> Grids { get; }
         private Image<Rgba32> _image;
 
         public Decoder(Image<Rgba32> image)
         {
-            _currentPosition = 0;
+            _gridNumber = 0;
             _image = image; 
         } 
 
-        public List<CharacterGrid> DecodeCharacterGrids()
+        public PyxcellImage Decode()
+        {
+            var characters = DecodeCharacterGrids();
+            var colours = DecodeColourGrids();
+            var keywordColours = DecodeKeywordColourGrids();
+            var message = DecodeMessage();
+
+            return null;
+        }
+
+        private List<CharacterGrid> DecodeCharacterGrids()
         {
             var characterGrids = new List<CharacterGrid>();
             for (int i = Constraints.StartCharacter; i <= Constraints.EndCharacter; i++)
             {
-                var characterGrid = new CharacterGrid((char) i) { Pattern = DecodeGridPattern()};
+                var characterGrid = new CharacterGrid((char) i) { Pattern = DecodeGridPattern() };
                 characterGrids.Add(characterGrid);
+                _gridNumber++;
             }
 
-            return characterGrids;
+            _delChar = characterGrids[characterGrids.Count - 1];
 
+            return characterGrids;
+        }
+
+        private List<ColourDataGrid> DecodeColourGrids()
+        {
+            var colourDataGrids = new List<ColourDataGrid>();
+            ColourDataGrid colourDataGrid = new ColourDataGrid(DecodeGridColour()) { Pattern = DecodeGridPattern() };
+            while (!colourDataGrid.Pattern.SequenceEqual(_delChar.Pattern))
+            {
+                colourDataGrids.Add(colourDataGrid);
+                _gridNumber++;
+                colourDataGrid = new ColourDataGrid(DecodeGridColour()) { Pattern = DecodeGridPattern() };
+            }       
+            
+            _gridNumber++; // Skips the return character
+            return colourDataGrids; 
+        }
+
+        private Color DecodeGridColour()
+        {
+            var (row, column) = PyxcellConvert.GetGridPosition(_gridNumber);
+
+            var pixelRow = _image.GetPixelRowSpan(row);
+
+            Color colour = Color.Transparent;
+            for (int i = 0; i < Constraints.GridSize; i++)
+            {
+                colour = new Rgba32(pixelRow[column + i].Rgba);
+                if (colour != Color.Transparent)
+                    break;     
+            }
+
+            if (colour == Color.Transparent)
+                throw new Exception($"Could not find colour for grid {_gridNumber}.");
+
+            return colour;
+        }
+
+        private object DecodeKeywordColourGrids()
+        {
+            throw new NotImplementedException();
+        }
+
+        private object DecodeMessage()
+        {
+            throw new NotImplementedException();
         }
 
         private int[] DecodeGridPattern()
         {
-            var startPositionX = (_currentPosition % 50) * 14;
-            var startPositionY = (_currentPosition / 50) * 14;
-            
-            var pixelRow = _image.GetPixelRowSpan(startPositionY);
+            var (row, column) = PyxcellConvert.GetGridPosition(_gridNumber);
 
-            var pattern = new int[14];
+            var pixelRow = _image.GetPixelRowSpan(row);
+
+            var pattern = new int[Constraints.GridSize];
             for (int i = 0; i < pattern.Length; i++)
             {
-                var columnFill = pixelRow[startPositionX + i].ToHex();
-                pattern[i] = columnFill == Color.Transparent.ToHex() ? 0 : 1;
+                Color columnFill = new Rgba32(pixelRow[column + i].Rgba);
+                pattern[i] = columnFill == Color.Transparent ? 0 : 1;
             }
-
-            _currentPosition++;
 
             return pattern;
         }
