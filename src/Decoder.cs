@@ -11,7 +11,6 @@ namespace Pyxcell
     {
         private int _gridNumber;
         private CharacterGrid _delChar;
-        public List<Grid> Grids { get; }
         private Image<Rgba32> _image;
 
         public Decoder(Image<Rgba32> image)
@@ -20,44 +19,55 @@ namespace Pyxcell
             _image = image; 
         } 
 
-        public PyxcellImage Decode()
+        public PyxcellImage GeneratePyxcellImage(string base64)
         {
-            var characters = DecodeCharacterGrids();
+            var characterPatternMap = DecodeCharacterGrids();
             var colours = DecodeColourGrids();
             var keywordColours = DecodeColourGrids();
-            var message = DecodeMessage();
+            var (message, keywords) = DecodeMessage(characterPatternMap, keywordColours);
 
-            return null;
+            var pyxcellImage = new PyxcellImage(base64)
+            {
+                Message = message,
+                Keywords = keywords,
+                CharacterPatternMap = characterPatternMap,
+                Colours = colours
+            };
+
+            return pyxcellImage;
         }
 
-        private List<CharacterGrid> DecodeCharacterGrids()
+        private Dictionary<char, int[]> DecodeCharacterGrids()
         {
-            var characterGrids = new List<CharacterGrid>();
+            var characterPatternMap = new Dictionary<char, int[]>();
             for (int i = Constraints.StartCharacter; i <= Constraints.EndCharacter; i++)
             {
-                var characterGrid = new CharacterGrid((char) i) { Pattern = DecodeGridPattern() };
-                characterGrids.Add(characterGrid);
+                var character = (char) i;
+                var pattern = DecodeGridPattern();
+
+                characterPatternMap.Add(character, pattern);
+
+                if(i == Constraints.EndCharacter)
+                    _delChar = new CharacterGrid(character) { Pattern = pattern};
+
                 _gridNumber++;
             }
-
-            _delChar = characterGrids[characterGrids.Count - 1];
-
-            return characterGrids;
+            return characterPatternMap;
         }
 
-        private List<ColourDataGrid> DecodeColourGrids()
+        private List<Color> DecodeColourGrids()
         {
-            var colourDataGrids = new List<ColourDataGrid>();
-            ColourDataGrid colourDataGrid = new ColourDataGrid(DecodeGridColour()) { Pattern = DecodeGridPattern() };
+            var colours = new List<Color>();
+            var colourDataGrid = new ColourDataGrid(DecodeGridColour()) { Pattern = DecodeGridPattern() };
             while (!colourDataGrid.Pattern.SequenceEqual(_delChar.Pattern))
             {
-                colourDataGrids.Add(colourDataGrid);
+                colours.Add(colourDataGrid.Colour);
                 _gridNumber++;
                 colourDataGrid = new ColourDataGrid(DecodeGridColour()) { Pattern = DecodeGridPattern() };
             }       
             
             _gridNumber++; // Skips the return character
-            return colourDataGrids; 
+            return colours; 
         }
 
         private Color DecodeGridColour()
@@ -80,9 +90,44 @@ namespace Pyxcell
             return colour;
         }
 
-        private object DecodeMessage()
+        private (string, Dictionary<string, Color>) DecodeMessage(Dictionary<char, int[]> characterPatternMap, List<Color> keywordColours)
         {
-            throw new NotImplementedException();
+            var message = string.Empty;
+            var keywords = new Dictionary<string, Color>();
+            var pattern = DecodeGridPattern();
+            while(!pattern.SequenceEqual(_delChar.Pattern))
+            {
+                var character = characterPatternMap.Single(x => x.Value.SequenceEqual(pattern)).Key;
+                var colour = DecodeGridColour();
+
+                if(keywordColours.Contains(colour))
+                {
+                    var keyword = "" + character;
+                    _gridNumber++;
+                    pattern = DecodeGridPattern();
+                    character = characterPatternMap.Single(x => x.Value.SequenceEqual(pattern)).Key;
+                    var nextColour = DecodeGridColour();
+
+                    while (nextColour == colour)
+                    {
+                        keyword += character;
+                        _gridNumber++;
+                        pattern = DecodeGridPattern();
+                        character = characterPatternMap.Single(x => x.Value.SequenceEqual(pattern)).Key;
+                        nextColour = DecodeGridColour();
+                    } 
+
+                    message += keyword;
+                    keywords.Add(keyword, colour);
+                }
+
+                message += character;
+                
+                _gridNumber++;
+                pattern = DecodeGridPattern();
+            }
+
+            return (message, keywords);        
         }
 
         private int[] DecodeGridPattern()

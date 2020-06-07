@@ -25,7 +25,7 @@ namespace Pyxcell
             get => new Dictionary<string, Color>(_keywords);
             internal set => _keywords = value; 
         }
-        public string Message { get; }
+        public string Message { get; internal set; }
 
         internal PyxcellImage(string base64)
         {

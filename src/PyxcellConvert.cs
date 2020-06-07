@@ -39,14 +39,9 @@ namespace Pyxcell
         public static PyxcellImage Decode(string filePath)
         {
             using var image = Image.Load<Rgba32>(filePath);
-            var pyxcellImage = new PyxcellImage(image.ToBase64String(PngFormat.Instance));
             var decoder = new Decoder(image);
-            decoder.Decode();
-
-            return pyxcellImage;
+            return decoder.GeneratePyxcellImage(image.ToBase64String(PngFormat.Instance));;
             // ToDo: Verify image is valid first. This could be done on the fly...
-
-
         }
 
         internal static (int, int) GetGridPosition(int gridNumber)
