@@ -40,7 +40,7 @@ namespace Pyxcell
             };
 
             var image = PyxcellConvert.Encode("Hello world, how are you?", _defaultColours, keywords);
-                
+            _output.WriteLine(image);
         }
 
         [Fact]

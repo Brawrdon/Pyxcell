@@ -16,7 +16,7 @@ namespace Pyxcell
         }
 
         [Fact]
-        public void Decode_Succesfull_Exception()
+        public void Decode_Succesful_ReturnImage()
         {
             // Arrange & Act
             var image = PyxcellConvert.Decode("HelloWorld.png");
