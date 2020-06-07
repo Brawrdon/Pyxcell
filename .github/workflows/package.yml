@@ -20,8 +20,8 @@ jobs:
       run: dotnet restore
     - name: Build Project
       run: dotnet build
-    # - name: Copy Resources
-    #   run: cp ./tests/Resources/* ./tests/bin/Debug/netcoreapp3.1/
+    - name: Copy Resources
+      run: cp ./tests/Resources/* ./tests/bin/Debug/netcoreapp3.1/
     - name: Run Tests
       working-directory: ./tests/
       run: dotnet test --no-restore /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
