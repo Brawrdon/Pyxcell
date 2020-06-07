@@ -17,12 +17,11 @@ namespace Pyxcell
         public EncodingData(List<Color> colours, Dictionary<string, Color> keywords = null)
         {
             if(colours == null || !colours.Any())
-                throw new Exception($"{nameof(colours)} is null or empty");
+                throw new ArgumentException($"{nameof(colours)} is null or empty", nameof(colours));
 
             Grids = new List<Grid>();
 
-            _colours = new List<Color>();
-            _colours = ValidateColours(colours);
+            _colours = colours.Distinct().ToList();
             _availablePatterns = GeneratePatterns();
             _random = new Random();
 
@@ -41,7 +40,7 @@ namespace Pyxcell
         public int[] GetRandomPattern()
         {
             if (_availablePatterns.Count == 0)
-                throw new Exception("Grid limit reached.");
+                throw new Exception("Pattern limit reached.");
 
             var index = _random.Next(_availablePatterns.Count - 1);
             var pattern = _availablePatterns[index];
@@ -53,17 +52,6 @@ namespace Pyxcell
         {
             var index = _random.Next(Colours.Count);
             return Colours[index];
-        }
-
-        private List<Color> ValidateColours(List<Color> colours)
-        {
-            foreach (var colour in colours)
-            {     
-                if (_colours.Contains(colour))
-                    throw new Exception($"The palette already contains the colour {colour}.");
-            }
-
-            return colours;
         }
 
         private void AddCharactersToGridsList()
@@ -82,14 +70,9 @@ namespace Pyxcell
             foreach (var (keyword, colour) in keywords)
             {
                 if (_colours.Contains(colour))
-                    throw new Exception($"Colour {colour} is already used in the main colour palette.");
+                    throw new ArgumentException($"Colour {colour} is already used in the main colour palette.", nameof(keywords));
         
                 var keywordGrids = new KeywordGrids(keyword, colour);
-                var exists = Grids.OfType<KeywordGrids>().Any(x => x.Keyword == keywordGrids.Keyword || x.Colour == keywordGrids.Colour);
-
-                if(exists)
-                    throw new Exception($"Keyword {keywordGrids.Keyword} already exists or the keyword's colour {keywordGrids.Colour} is used by another keyword.");
-
                 Grids.Add(keywordGrids);
             }
             

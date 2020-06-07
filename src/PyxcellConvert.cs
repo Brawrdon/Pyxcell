@@ -69,7 +69,7 @@ namespace Pyxcell
                 throw new Exception("Too much metadata.");
 
             if (message.Length > maxMessageLength)
-                throw new ArgumentException($"Message should be {maxMessageLength} characters or less.");
+                throw new ArgumentException($"Message should be {maxMessageLength} characters or less.", nameof(message));
 
             return Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(message));
         }
