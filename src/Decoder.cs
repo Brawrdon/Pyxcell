@@ -1,230 +1,149 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Pyxcell.Common;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
+using System.Linq;
 using SixLabors.ImageSharp.PixelFormats;
-using static System.String;
 
 namespace Pyxcell
 {
-    public class DecodedImage
-    {
-        
-        public  IColourPalette ColourPalette { get; }
-        public  IColourPalette KeywordColourPalette { get; }
-
-        public List<CharacterGrid> CharacterMappings { get;}
-        public List<Keyword> Keywords;
-        public string Text;
-        
-        internal DecodedImage()
-        {
-            ColourPalette = new ColourPalette();
-            KeywordColourPalette = new ColourPalette();
-            CharacterMappings = new List<CharacterGrid>();
-            Keywords = new List<Keyword>();
-            Text = Empty;
-        }
-    }
     
-    public class Decoder : IDecoder
+    class Decoder
     {
-        private readonly string _imagePath;
-        private readonly DecodedImage _decodedImage;
-        private int _row;
-        private int _column;
+        private int _gridNumber;
+        private CharacterGrid _delChar;
+        private Image<Rgba32> _image;
 
-        public Decoder(string imagePath)
+        public Decoder(Image<Rgba32> image)
         {
-            _imagePath = imagePath;
-            _row = 0;
-            _column = 0;
-            _decodedImage = new DecodedImage();
+            _gridNumber = 0;
+            _image = image; 
+        } 
+
+        public PyxcellImage GeneratePyxcellImage(string base64)
+        {
+            var characterPatternMap = DecodeCharacterGrids();
+            var colours = DecodeColourGrids();
+            var keywordColours = DecodeColourGrids();
+            var (message, keywords) = DecodeMessage(characterPatternMap, keywordColours);
+
+            var pyxcellImage = new PyxcellImage(base64)
+            {
+                Message = message,
+                Keywords = keywords,
+                CharacterPatternMap = characterPatternMap,
+                Colours = colours
+            };
+
+            return pyxcellImage;
         }
 
-        public DecodedImage Decode()
+        private Dictionary<char, int[]> DecodeCharacterGrids()
         {
-            using (var image = Image.Load<Rgba32>(_imagePath))
+            var characterPatternMap = new Dictionary<char, int[]>();
+            for (int i = Constraints.StartCharacter; i <= Constraints.EndCharacter; i++)
             {
-                DecodeLetterMappings(image);
-                DecodeColourPalette(image);
-                DecodeKeywordsColourPalette(image);
-                DecodeText(image);
-                FindKeywords(image);
+                var character = (char) i;
+                var pattern = DecodeGridPattern();
 
+                characterPatternMap.Add(character, pattern);
+
+                if(i == Constraints.EndCharacter)
+                    _delChar = new CharacterGrid(character) { Pattern = pattern};
+
+                _gridNumber++;
+            }
+            return characterPatternMap;
+        }
+
+        private List<Color> DecodeColourGrids()
+        {
+            var colours = new List<Color>();
+            var colourDataGrid = new ColourDataGrid(DecodeGridColour()) { Pattern = DecodeGridPattern() };
+            while (!colourDataGrid.Pattern.SequenceEqual(_delChar.Pattern))
+            {
+                colours.Add(colourDataGrid.Colour);
+                _gridNumber++;
+                colourDataGrid = new ColourDataGrid(DecodeGridColour()) { Pattern = DecodeGridPattern() };
+            }       
+            
+            _gridNumber++; // Skips the return character
+            return colours; 
+        }
+
+        private Color DecodeGridColour()
+        {
+            var (row, column) = PyxcellConvert.GetGridPosition(_gridNumber);
+
+            var pixelRow = _image.GetPixelRowSpan(row);
+
+            Color colour = Color.Transparent;
+            for (int i = 0; i < Constraints.GridSize; i++)
+            {
+                colour = new Rgba32(pixelRow[column + i].Rgba);
+                if (colour != Color.Transparent)
+                    break;     
             }
 
-            return _decodedImage;
+            if (colour == Color.Transparent)
+                throw new Exception($"Could not find colour for grid {_gridNumber}.");
+
+            return colour;
         }
 
-        private void FindKeywords(Image<Rgba32> image)
+        private (string, Dictionary<string, Color>) DecodeMessage(Dictionary<char, int[]> characterPatternMap, List<Color> keywordColours)
         {
-            const string pattern = @"^(\s+|\d+|\w+|[^\d\s\w])+$";
-            var words = new List<string>();
-
-            var regex = new Regex(pattern);
-
-            if (!regex.IsMatch(_decodedImage.Text)) 
-                return;
-           
-            var match = regex.Match(_decodedImage.Text);
-            foreach (Capture capture in match.Groups[1].Captures)
-                words.Add(capture.Value);
-
-            var index = (_decodedImage.CharacterMappings.Count + _decodedImage.ColourPalette.Colours.Count + 1 +
-                         _decodedImage.KeywordColourPalette.Colours.Count + 1) - 1;
-            foreach (var word in words)
+            var message = string.Empty;
+            var keywords = new Dictionary<string, Color>();
+            var pattern = DecodeGridPattern();
+            while(!pattern.SequenceEqual(_delChar.Pattern))
             {
-                index += word.Length;
+                var character = characterPatternMap.Single(x => x.Value.SequenceEqual(pattern)).Key;
+                var colour = DecodeGridColour();
 
-                _column = index % 50;
-                _row = index / 50;
-                var grid = DecodeColourGrid(image);
-
-                if (_decodedImage.KeywordColourPalette.Colours.Contains(grid.Colour))
+                if(keywordColours.Contains(colour))
                 {
-                    _decodedImage.Keywords.Add(new Keyword { Colour = grid.Colour, Word = word});
+                    var keyword = "" + character;
+                    _gridNumber++;
+                    pattern = DecodeGridPattern();
+                    character = characterPatternMap.Single(x => x.Value.SequenceEqual(pattern)).Key;
+                    var nextColour = DecodeGridColour();
+
+                    while (nextColour == colour)
+                    {
+                        keyword += character;
+                        _gridNumber++;
+                        pattern = DecodeGridPattern();
+                        character = characterPatternMap.Single(x => x.Value.SequenceEqual(pattern)).Key;
+                        nextColour = DecodeGridColour();
+                    } 
+
+                    message += keyword;
+                    keywords.Add(keyword, colour);
                 }
 
-            }
-        }
-
-        private void DecodeText(Image<Rgba32> image)
-        {
-            var isControlChar = false;
-            while (!isControlChar)
-            {
-                var grid = DecodeCharacterGrid(image);
-                var gridCharacter = _decodedImage.CharacterMappings.First(x => x.Fill.SequenceEqual(grid.Fill)).Char;
-                grid.Char = gridCharacter;
+                message += character;
                 
-                if (char.IsControl(grid.Char))
-                    isControlChar = true;
-                else
-                    _decodedImage.Text += grid.Char;
+                _gridNumber++;
+                pattern = DecodeGridPattern();
             }
+
+            return (message, keywords);        
         }
 
-
-        private void DecodeColourPalette(Image<Rgba32> image)
+        private int[] DecodeGridPattern()
         {
-            var isControlChar = false;
-            while (!isControlChar)
+            var (row, column) = PyxcellConvert.GetGridPosition(_gridNumber);
+
+            var pixelRow = _image.GetPixelRowSpan(row);
+
+            var pattern = new int[Constraints.GridSize];
+            for (int i = 0; i < pattern.Length; i++)
             {
-                var grid = DecodeColourGrid(image);
-                var controlGrid = _decodedImage.CharacterMappings.First(x => char.IsControl(x.Char));
-
-                if (controlGrid.Fill.SequenceEqual(grid.Fill))
-                    isControlChar = true;
-                else
-                    _decodedImage.ColourPalette.AddColour(grid.Colour);
+                Color columnFill = new Rgba32(pixelRow[column + i].Rgba);
+                pattern[i] = columnFill == Color.Transparent ? 0 : 1;
             }
-        }
-        
-        private void DecodeKeywordsColourPalette(Image<Rgba32> image)
-        {
-            var isControlChar = false;
-            while (!isControlChar)
-            {
-                var grid = DecodeColourGrid(image);
-                var controlGrid = _decodedImage.CharacterMappings.First(x => char.IsControl(x.Char));
 
-                if (controlGrid.Fill.SequenceEqual(grid.Fill))
-                    isControlChar = true;
-                else
-                    _decodedImage.KeywordColourPalette.AddColour(grid.Colour);
-            }
-        }
-
-        private void DecodeLetterMappings(Image<Rgba32> image)
-        {
-            var isControlChar = false;
-            var character = (char) 32;
-            while (!isControlChar)
-            {
-                if (char.IsControl(character))
-                    isControlChar = true;
-                
-                var grid = DecodeCharacterGrid(image, character);
-                _decodedImage.CharacterMappings.Add(grid);
-                character++;
-
-                
-            }
-        }
-
-        private CharacterGrid DecodeCharacterGrid(Image<Rgba32> image, char character = default)
-        {
-            var characterGrid = new CharacterGrid(character);
-            var column = GetColumn();
-            SetRowAndColumn();
-            
-            for (var y = 0 + _row * 14; y < 14 + _row * 14; y++)
-            {
-                var pixelRowSpan = image.GetPixelRowSpan(y);
-
-                // Columns take a 14 x 14 grid.
-                for (var x = column * 14; x < 14 + column * 14; x++)
-                {
-                    // Reset x to be between 0 and 14 so we can use it as the index when accessing
-                    // the current letter's Fill array. We divide by 2 as it'll produce a whole number
-                    // within the bounds of the fill array which has a length of 7.
-                    var indexForFill = (x - column * 14) / 2;
-                    
-                    var tmpColour = new Rgba32(pixelRowSpan[x].PackedValue);
-                    characterGrid.Fill[indexForFill] = tmpColour.Equals(Rgba32.Transparent) || tmpColour.Equals(new Rgba32(0, 0, 0, 0)) ? 0 : 1;
-                }
-            }
-            
-            _column++;
-            return characterGrid;
-        }
-        
-        private ColourGrid DecodeColourGrid(Image<Rgba32> image)
-        {
-            var colourMapping = new ColourGrid(Rgba32.Transparent);
-            var column = GetColumn();
-            SetRowAndColumn();
-            
-            for (var y = 0 + _row * 14; y < 14 + _row * 14; y++)
-            {
-                var pixelRowSpan = image.GetPixelRowSpan(y);
-
-                // Columns take a 14 x 14 grid.
-                for (var x = column * 14; x < 14 + column * 14; x++)
-                {
-                    // Reset x to be between 0 and 14 so we can use it as the index when accessing
-                    // the current letter's Fill array. We divide by 2 as it'll produce a whole number
-                    // within the bounds of the fill array which has a length of 7.
-                    var indexForFill = (x - column * 14) / 2;
-                    
-                    var tmpColour = new Rgba32(pixelRowSpan[x].PackedValue);
-                    colourMapping.Fill[indexForFill] = tmpColour.Equals(Rgba32.Transparent) || tmpColour.Equals(new Rgba32(0, 0, 0, 0)) ? 0 : 1;
-
-                    if (!tmpColour.Equals(Rgba32.Transparent) && !tmpColour.Equals(new Rgba32(0, 0, 0, 0)))
-                        colourMapping.Colour = tmpColour;
-                }
-            }
-            
-            _column++;
-            return colourMapping;
-        }
-        
-
-        private void SetRowAndColumn()
-        {
-            if (_column == 0 || _column % 50 != 0) 
-                return;
-           
-            _row++;
-            _column = 0;
-        }
-        
-        private int GetColumn()
-        {
-            return _column % 50;
+            return pattern;
         }
 
     }
