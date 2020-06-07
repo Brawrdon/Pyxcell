@@ -31,8 +31,11 @@ namespace Pyxcell
         {
             DrawCharacterGrids();
             DrawColourGrids();
+            Draw(_delChar.Pattern, _encodingData.GetRandomColour());
             DrawKeywordColourGrids();
+            Draw(_delChar.Pattern, _encodingData.GetRandomColour());
             DrawMessage();
+            Draw(_delChar.Pattern, _encodingData.GetRandomColour());
         }
 
         private void DrawCharacterGrids()
@@ -53,8 +56,6 @@ namespace Pyxcell
                 var colourDataGrid = grid as ColourDataGrid;
                 Draw(colourDataGrid.Pattern, colourDataGrid.Colour);
             }
-
-            Draw(_delChar.Pattern, _encodingData.GetRandomColour());
         }
 
         private void DrawKeywordColourGrids()
@@ -65,8 +66,6 @@ namespace Pyxcell
                 var keywordGrid = grid as KeywordGrids;
                 Draw(_encodingData.GetRandomPattern(), keywordGrid.Colour);
             }
-
-            Draw(_delChar.Pattern, _encodingData.GetRandomColour());
         }
 
         private void DrawMessage()
